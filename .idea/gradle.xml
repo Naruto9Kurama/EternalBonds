@@ -14,6 +14,7 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/librarys" />
             <option value="$PROJECT_DIR$/librarys/exoplayer" />
+            <option value="$PROJECT_DIR$/librarys/nanohttpd" />
             <option value="$PROJECT_DIR$/librarys/webrtc" />
           </set>
         </option>
