@@ -62,5 +62,6 @@ dependencies {
     implementation(project(":librarys"))
 //    implementation(project(":librarys:webrtc"))
     implementation(project(":librarys:exoplayer"))
+    implementation(project(":librarys:common"))
     implementation("org.java-websocket:Java-WebSocket:1.5.4")
 }
