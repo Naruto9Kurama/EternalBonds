@@ -5,6 +5,7 @@ plugins {
 allprojects {
     apply(plugin = "com.android.library")
     apply(plugin = "org.jetbrains.kotlin.android")
+
     android {
         namespace = "com.creator.librarys"
         compileSdk = 34
@@ -46,6 +47,7 @@ allprojects {
         testImplementation("junit:junit:4.13.2")
         androidTestImplementation("androidx.test.ext:junit:1.1.5")
         androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+        implementation("com.google.code.gson:gson:2.10.1")
         if (project.name!="common"){
             implementation(project(":librarys:common"))
         }

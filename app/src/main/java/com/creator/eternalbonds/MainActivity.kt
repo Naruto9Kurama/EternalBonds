@@ -3,9 +3,7 @@ package com.creator.eternalbonds
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.ViewTreeObserver
 import com.creator.eternalbonds.databinding.ActivityMainBinding
-import com.creator.exoplayer.player.ExoPlayerSingleton
 
 class MainActivity : AppCompatActivity() {
 
@@ -24,12 +22,8 @@ class MainActivity : AppCompatActivity() {
 
         /*val webSocketServer = WebSocketServer()
         webSocketServer.start()*/
+
     }
-
-
-
-
-
 
 
 

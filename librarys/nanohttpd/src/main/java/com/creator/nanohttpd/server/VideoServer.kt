@@ -8,7 +8,7 @@ import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
-class VideoServer(port: Int = Constants.Port.NANOHTTPD) : NanoHTTPD(port) {
+class VideoServer(port: Int = Constants.NanoHttpd.PORT) : NanoHTTPD(port) {
     private val TAG = this.javaClass.simpleName
 
     lateinit var currentVideoUri: String

@@ -5,6 +5,7 @@ import android.util.Log;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 
 public class WebSocketClient extends org.java_websocket.client.WebSocketClient {
 
@@ -12,8 +13,12 @@ public class WebSocketClient extends org.java_websocket.client.WebSocketClient {
 
     public WebSocketClient(URI serverUri, String tag) {
         super(serverUri);
-        TAG=tag;
+        TAG = tag;
         connect();
+    }
+
+    public WebSocketClient(String serverUri, String tag) throws URISyntaxException {
+        this(new URI(serverUri), tag);
     }
 
     @Override
@@ -23,7 +28,7 @@ public class WebSocketClient extends org.java_websocket.client.WebSocketClient {
 
     @Override
     public void onMessage(String message) {
-        Log.d(TAG, "onMessage:::"+message);
+        Log.d(TAG, "onMessage:::" + message);
 
 
     }
@@ -36,7 +41,7 @@ public class WebSocketClient extends org.java_websocket.client.WebSocketClient {
 
     @Override
     public void onError(Exception ex) {
-        Log.e(TAG, "onError:::" + ex.getMessage(),ex);
+        Log.e(TAG, "onError:::" + ex.getMessage(), ex);
 
     }
 

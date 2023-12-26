@@ -21,5 +21,7 @@ dependencies {
 //    implementation ("org.nanohttpd:nanohttpd:2.3.1")
 
     implementation(project(":librarys:nanohttpd"))
+    implementation(project(":librarys:websocket"))
+    implementation("org.java-websocket:Java-WebSocket:1.5.4")
     implementation ("org.nanohttpd:nanohttpd:2.3.1")
 }

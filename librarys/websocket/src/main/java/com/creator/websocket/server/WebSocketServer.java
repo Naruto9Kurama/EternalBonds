@@ -14,8 +14,9 @@ import java.util.List;
 
 
 public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
+
     public WebSocketServer() {
-        super(new InetSocketAddress(Constants.Port.WEBSOCKET_SERVER));
+        super(new InetSocketAddress(Constants.WebScket.PORT));
     }
 
     public WebSocketServer(InetSocketAddress address) {
