@@ -20,6 +20,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, VideoActivity::class.java))
         }
 
+        binding.rec.setOnClickListener {
+            startActivity(Intent(this, VideoActivity::class.java))
+        }
+
         /*val webSocketServer = WebSocketServer()
         webSocketServer.start()*/
 

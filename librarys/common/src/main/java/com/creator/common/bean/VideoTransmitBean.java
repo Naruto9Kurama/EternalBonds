@@ -13,6 +13,9 @@ public class VideoTransmitBean {
         return new Gson().toJson(this);
     }
 
+    public static VideoTransmitBean toClass(String str) {
+        return new Gson().fromJson(str, VideoTransmitBean.class);
+    }
 
     public String getUri() {
         return uri;

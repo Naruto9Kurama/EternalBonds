@@ -3,7 +3,9 @@ package com.creator.eternalbonds
 import android.os.Bundle
 import android.view.ViewTreeObserver
 import androidx.appcompat.app.AppCompatActivity
+import com.creator.common.enums.Enums
 import com.creator.eternalbonds.databinding.ActivityVideoBinding
+import com.creator.exoplayer.fragment.VideoPlayerFragment
 import com.creator.exoplayer.player.ExoPlayerSingleton
 
 class VideoActivity: AppCompatActivity()  {
@@ -29,6 +31,15 @@ class VideoActivity: AppCompatActivity()  {
             }
         })
 
+
+        // 启动 Fragment，并传递枚举值
+        val enumValue = Enums.VideoRole.Server
+        val fragment = VideoPlayerFragment.newInstance(enumValue)
+
+        // 使用 FragmentManager 启动 Fragment
+        supportFragmentManager.beginTransaction()
+            .replace(binding.playerView.id, fragment)
+            .commit()
 
     }
 }

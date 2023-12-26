@@ -6,7 +6,7 @@ data object Constants {
     /**
      * WebSocket Constants
      */
-    object WebScket{
+    object WebSocket{
         const val PORT=8089
         const val URL=""
     }

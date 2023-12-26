@@ -3,6 +3,7 @@ package com.creator.websocket.server;
 import android.util.Log;
 
 import com.creator.common.Constants;
+import com.creator.common.bean.VideoTransmitBean;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
@@ -16,7 +17,7 @@ import java.util.List;
 public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
 
     public WebSocketServer() {
-        super(new InetSocketAddress(Constants.WebScket.PORT));
+        this(new InetSocketAddress(Constants.WebSocket.PORT));
     }
 
     public WebSocketServer(InetSocketAddress address) {
@@ -55,7 +56,6 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
     @Override
     public void onMessage(WebSocket conn, String message) {
         Log.d(TAG,"onMessage:::"+message);
-
     }
 
     @Override
