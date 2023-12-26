@@ -1,18 +1,28 @@
 package com.creator.exoplayer.player
 
 import android.content.Context
+import android.util.Log
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 
-object ExoPlayerSingleton {
 
+object ExoPlayerSingleton {
+    private const val TAG = "ExoPlayerSingleton"
     private lateinit var exoPlayer: ExoPlayer
 
     fun getExoPlayer(context: Context): ExoPlayer {
         exoPlayer = ExoPlayer.Builder(context).build();
+        exoPlayer.addListener(object : Player.Listener {
+            override fun onPositionDiscontinuity(reason: Int) {
+                super.onPositionDiscontinuity(reason)
+                val currentPosition = exoPlayer.currentPosition
+                Log.d(TAG, "当前时间:::$currentPosition")
+            }
+        })
         return exoPlayer
     }
 

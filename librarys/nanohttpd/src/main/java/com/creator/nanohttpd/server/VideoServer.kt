@@ -1,21 +1,25 @@
 package com.creator.nanohttpd.server
 
+import android.util.Log
+import com.creator.common.Constants
 import fi.iki.elonen.NanoHTTPD
 import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
-class VideoServer(port: Int) : NanoHTTPD(port) {
+class VideoServer(port: Int = Constants.Port.NANOHTTPD) : NanoHTTPD(port) {
+    private val TAG = this.javaClass.simpleName
 
+    lateinit var currentVideoUri: String
     override fun serve(session: IHTTPSession): Response {
         val uri = session.uri
-
+        Log.d(TAG, "当前访问uri:::$uri")
         return when (uri) {
             "/video" -> {
                 try {
                     val videoUrl =
-                        URL("http://vfx.mtime.cn/Video/2018/07/06/mp4/180706094003288023.mp4")  // Replace with the actual HTTP video URL
+                        URL(currentVideoUri)  // Replace with the actual HTTP video URL
                     val connection = videoUrl.openConnection() as HttpURLConnection
                     connection.connect()
                     val videoStream: InputStream = connection.inputStream
@@ -26,6 +30,7 @@ class VideoServer(port: Int) : NanoHTTPD(port) {
                     newFixedLengthResponse("Error serving video")
                 }
             }
+
             else -> {
                 newFixedLengthResponse("Invalid endpoint")
             }

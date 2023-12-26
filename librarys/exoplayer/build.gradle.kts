@@ -16,6 +16,10 @@ dependencies {
     implementation ("com.google.android.exoplayer:exoplayer-hls:2.19.1")
     implementation("androidx.leanback:leanback:1.0.0")
     implementation("com.github.bumptech.glide:glide:4.11.0")
+    implementation("androidx.databinding:databinding-runtime:8.2.0")
 //    implementation ("com.arthenica:mobile-ffmpeg-full:4.4")
 //    implementation ("org.nanohttpd:nanohttpd:2.3.1")
+
+    implementation(project(":librarys:nanohttpd"))
+    implementation ("org.nanohttpd:nanohttpd:2.3.1")
 }

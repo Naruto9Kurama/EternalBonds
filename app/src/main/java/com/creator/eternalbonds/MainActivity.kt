@@ -1,9 +1,9 @@
 package com.creator.eternalbonds
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import com.creator.common.utils.IPUtil
+import android.view.ViewTreeObserver
 import com.creator.eternalbonds.databinding.ActivityMainBinding
 import com.creator.exoplayer.player.ExoPlayerSingleton
 
@@ -17,16 +17,28 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        /*ExoPlayerSingleton.setSource("http://vfx.mtime.cn/Video/2018/07/06/mp4/180706094003288023.mp4",this)
-        ExoPlayerSingleton.play()*/
 
-        val allIPAddress = IPUtil.getIPAddresses(false)
-
-        for (allIPAddress1 in allIPAddress) {
-            Log.d("AAAASASAS",allIPAddress1)
+        binding.faqi.setOnClickListener {
+            startActivity(Intent(this, VideoActivity::class.java))
         }
 
+        /*val webSocketServer = WebSocketServer()
+        webSocketServer.start()*/
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * A native method that is implemented by the 'eternalbonds' native library,

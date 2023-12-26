@@ -6,10 +6,15 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <com.creator.exoplayer.view.MyPlayerView
-        android:id="@+id/playerView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-
-
+    <Button
+        android:id="@+id/faqi"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="faqi"/>
+    <Button
+        android:id="@+id/rec"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintRight_toRightOf="parent"
+        android:text="客户端"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
