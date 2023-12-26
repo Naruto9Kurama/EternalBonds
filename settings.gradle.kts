@@ -1,5 +1,13 @@
 pluginManagement {
     repositories {
+        maven(url = "https://maven.aliyun.com/repository/public")
+        maven(url = "https://maven.aliyun.com/repository/google")
+        maven(url = "https://maven.aliyun.com/repository/jcenter")
+        maven(url = "https://developer.huaweicloud.com/repo/")
+        maven(url = "https://mirrors.tuna.tsinghua.edu.cn/public")
+        maven(url = "https://mirrors.tuna.tsinghua.edu.cn/google")
+        maven(url = "https://mirrors.tuna.tsinghua.edu.cn/jcenter")
+        maven(url = "https://mirrors.tuna.tsinghua.edu.cn/gradle-plugin")
         google()
         mavenCentral()
         gradlePluginPortal()
@@ -8,6 +16,14 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        maven(url = "https://maven.aliyun.com/repository/public")
+        maven(url = "https://maven.aliyun.com/repository/google")
+        maven(url = "https://maven.aliyun.com/repository/jcenter")
+        maven(url = "https://developer.huaweicloud.com/repo/")
+        maven(url = "https://mirrors.tuna.tsinghua.edu.cn/public")
+        maven(url = "https://mirrors.tuna.tsinghua.edu.cn/google")
+        maven(url = "https://mirrors.tuna.tsinghua.edu.cn/jcenter")
+        maven(url = "https://mirrors.tuna.tsinghua.edu.cn/gradle-plugin")
         google()
         mavenCentral()
     }
