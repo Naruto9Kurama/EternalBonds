@@ -71,7 +71,7 @@ object ExoPlayerSingleton {
             ProgressiveMediaSource.Factory(
                 DefaultDataSourceFactory(
                     context,
-                    "com.creator.artplayer"
+                    "com.creator.eternalbonds"
                 )
             ).createMediaSource(mediaItem)
         exoPlayer.setMediaSource(mediaSource)
