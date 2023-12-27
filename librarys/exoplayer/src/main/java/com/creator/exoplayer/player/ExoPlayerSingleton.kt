@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.widget.Toast
 import com.creator.common.Constants
 import com.creator.common.bean.VideoTransmitBean
 import com.creator.common.enums.Enums
@@ -64,7 +65,7 @@ object ExoPlayerSingleton {
         return exoPlayer
     }
 
-    fun setSource(uri: String, context: Context) {
+    fun setSource(uri: String, context: Context, isPlayWhenReady: Boolean = false) {
         val mediaItem = MediaItem.fromUri(uri)
         val mediaSource: MediaSource =
             ProgressiveMediaSource.Factory(
@@ -75,7 +76,7 @@ object ExoPlayerSingleton {
             ).createMediaSource(mediaItem)
         exoPlayer.setMediaSource(mediaSource)
         exoPlayer.prepare()
-//        exoPlayer.playWhenReady = true;
+        if (isPlayWhenReady) exoPlayer.playWhenReady = true;
     }
 
     fun play() {
@@ -119,7 +120,7 @@ object ExoPlayerSingleton {
                 val handler = Handler(Looper.getMainLooper())
                 handler.post {
                     if (videoUri == null) {
-                        setSource(videoTransmitBean.uri, context)
+                        setSource(videoTransmitBean.uri, context,true)
                         videoUri = videoTransmitBean.uri
                         play()
                     }
@@ -170,6 +171,7 @@ object ExoPlayerSingleton {
 
             override fun onStart() {
                 LogUtil.d(TAG, "onStart")
+                Toast.makeText(context, "WebSocket服务启动成功", Toast.LENGTH_SHORT).show()
             }
         }
 

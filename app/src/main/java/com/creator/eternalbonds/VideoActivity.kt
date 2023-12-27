@@ -4,11 +4,12 @@ import android.os.Bundle
 import android.view.ViewTreeObserver
 import androidx.appcompat.app.AppCompatActivity
 import com.creator.common.enums.Enums
+import com.creator.common.utils.IPUtil
 import com.creator.eternalbonds.databinding.ActivityVideoBinding
 import com.creator.exoplayer.fragment.VideoPlayerFragment
 import com.creator.exoplayer.player.ExoPlayerSingleton
 
-class VideoActivity: AppCompatActivity()  {
+class VideoActivity : AppCompatActivity() {
     private lateinit var binding: ActivityVideoBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,16 +34,22 @@ class VideoActivity: AppCompatActivity()  {
 
         // 启动 Fragment，并传递枚举值
         // 从 Intent 中获取枚举值的字符串表示
-        // 从 Intent 中获取枚举值的字符串表示
-        val enumString = intent.getStringExtra("test")?:""
+        val enumString = intent.getStringExtra("test") ?: ""
+        val ip = intent.getStringExtra("ip") ?: ""
 
         val enumValue = Enums.VideoRole.valueOf(enumString)
-        val fragment = VideoPlayerFragment.newInstance(enumValue)
+        val fragment = VideoPlayerFragment.newInstance(enumValue, ip)
 
         // 使用 FragmentManager 启动 Fragment
         supportFragmentManager.beginTransaction()
             .replace(binding.playerView.id, fragment)
             .commit()
 
+        IPUtil.getIpv4Address { ip ->
+            runOnUiThread {
+                binding.ipText.text = binding.ipText.text.toString() + "$ip \n"
+            }
+        }
+//        binding.ipText.text = IPUtil.getIPAddresses(true,false)[0]
     }
 }

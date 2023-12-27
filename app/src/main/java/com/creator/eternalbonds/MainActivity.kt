@@ -26,9 +26,12 @@ class MainActivity : AppCompatActivity() {
         binding.rec.setOnClickListener {
             val intent = Intent(this, VideoActivity::class.java)
             intent.putExtra("test",Enums.VideoRole.Client.name)
+            val text = binding.ipEdit.text
+            intent.putExtra("ip", text.toString())
             startActivity(intent)
         }
 
+        //27.149.25.162
         /*val webSocketServer = WebSocketServer()
         webSocketServer.start()*/
 
