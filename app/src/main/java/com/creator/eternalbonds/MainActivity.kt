@@ -1,8 +1,9 @@
 package com.creator.eternalbonds
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import com.creator.common.enums.Enums
 import com.creator.eternalbonds.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -17,11 +18,15 @@ class MainActivity : AppCompatActivity() {
 
 
         binding.faqi.setOnClickListener {
-            startActivity(Intent(this, VideoActivity::class.java))
+            val intent = Intent(this, VideoActivity::class.java)
+            intent.putExtra("test",Enums.VideoRole.Server.name)
+            startActivity(intent)
         }
 
         binding.rec.setOnClickListener {
-            startActivity(Intent(this, VideoActivity::class.java))
+            val intent = Intent(this, VideoActivity::class.java)
+            intent.putExtra("test",Enums.VideoRole.Client.name)
+            startActivity(intent)
         }
 
         /*val webSocketServer = WebSocketServer()

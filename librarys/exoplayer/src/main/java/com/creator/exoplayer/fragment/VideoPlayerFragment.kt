@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.creator.common.Constants
 import com.creator.common.enums.Enums
 import com.creator.exoplayer.databinding.FragmentVideoPlayerBinding
 import com.creator.exoplayer.player.ExoPlayerSingleton
@@ -46,13 +47,15 @@ class VideoPlayerFragment : Fragment() {
         _binding = FragmentVideoPlayerBinding.inflate(inflater, container, false)
         when (role) {
             Enums.VideoRole.Server -> {
-                binding.playerView.player = ExoPlayerSingleton.getExoPlayer(requireContext(),true)
+                binding.playerView.player = ExoPlayerSingleton.getExoPlayer(requireContext(),Enums.VideoRole.Server)
                 val videoServer = VideoServer()
                 videoServer.start()
+                ExoPlayerSingleton.setSource("http://vfx.mtime.cn/Video/2018/07/06/mp4/180706094003288023.mp4",requireContext())
+                ExoPlayerSingleton.play()
             }
 
             Enums.VideoRole.Client -> {
-                binding.playerView.player = ExoPlayerSingleton.getExoPlayer(requireContext(),false)
+                binding.playerView.player = ExoPlayerSingleton.getExoPlayer(requireContext(), Enums.VideoRole.Client,"ws://192.168.2.44:${Constants.WebSocket.PORT}")
 
             }
         }

@@ -36,6 +36,7 @@ allprojects {
 
         buildFeatures {
             viewBinding = true
+            dataBinding = true
         }
     }
 
