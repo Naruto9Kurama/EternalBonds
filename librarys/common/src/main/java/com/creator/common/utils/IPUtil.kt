@@ -20,13 +20,15 @@ object IPUtil {
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    var string = response.body.string()
+                    kotlin.run {
+                        var string = response.body.string()
+                        LogUtil.d(TAG, string)
 
-                    LogUtil.d(TAG, string)
-                    /*if (!isPublicIP(string)) {
-                        string = ""
-                    }*/
-                    block(string)
+                        /*if (!isPublicIP(string)) {
+                            string = ""
+                        }*/
+                        block(string)
+                    }
                 }
 
             })

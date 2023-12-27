@@ -17,13 +17,16 @@ data object Constants {
 
     object IP {
         val REQUEST_URL = arrayListOf<String>(
-            "https://ipinfo.io/ip",
+            //ipv6
+            "https://api64.ipify.org",
+            "http://ipv6-test.com/api/myip.php",
             "http://icanhazip.com",
             "https://api.ipify.org",
+            //ipv4
+            "http://checkip.amazonaws.com",//包括地区位置
             "http://httpbin.org/ip",
             "http://ip-api.com/json",
-            "https://api64.ipify.org",
-            "http://checkip.amazonaws.com"
+            "https://ipinfo.io/ip"
         )
     }
 

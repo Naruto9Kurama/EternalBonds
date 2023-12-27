@@ -67,7 +67,7 @@ class VideoPlayerFragment : Fragment() {
                 binding.playerView.player = ExoPlayerSingleton.getExoPlayer(
                     requireContext(),
                     Enums.VideoRole.Client,
-                    "ws://$serverIp:${Constants.WebSocket.PORT}"
+                    "ws://[$serverIp]:${Constants.WebSocket.PORT}"
                 )
 
             }

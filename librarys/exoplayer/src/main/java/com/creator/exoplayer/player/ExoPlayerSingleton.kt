@@ -1,5 +1,6 @@
 package com.creator.exoplayer.player
 
+import MainThreadExecutor
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
@@ -116,9 +117,7 @@ object ExoPlayerSingleton {
 
             override fun onMessage(message: String?) {
                 val videoTransmitBean = VideoTransmitBean.toClass(message)
-//                videoUri.postValue(videoTransmitBean.uri)
-                val handler = Handler(Looper.getMainLooper())
-                handler.post {
+                MainThreadExecutor.runOnUiThread {
                     if (videoUri == null) {
                         setSource(videoTransmitBean.uri, context,true)
                         videoUri = videoTransmitBean.uri
@@ -126,7 +125,6 @@ object ExoPlayerSingleton {
                     }
 
                     seekTo(videoTransmitBean.currentPosition)
-
                 }
 
             }
@@ -171,7 +169,10 @@ object ExoPlayerSingleton {
 
             override fun onStart() {
                 LogUtil.d(TAG, "onStart")
-                Toast.makeText(context, "WebSocket服务启动成功", Toast.LENGTH_SHORT).show()
+                MainThreadExecutor.runOnUiThread {
+                    Toast.makeText(context, "WebSocket服务启动成功", Toast.LENGTH_SHORT).show()
+                }
+
             }
         }
 
