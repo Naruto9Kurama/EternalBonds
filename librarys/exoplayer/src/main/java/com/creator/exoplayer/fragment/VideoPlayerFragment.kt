@@ -35,9 +35,9 @@ class VideoPlayerFragment : Fragment() {
         arguments?.let {
             role = it.getSerializable(VIDEO_ROLE_ENUM_KEY) as Enums.VideoRole
             serverIp = it.getString(SERVER_IP_KEY)!!
-            uri = it.getString(URI_KEY)!!
+//            uri = it.getString(URI_KEY)!!
         }
-        /*//判断serverIp是否是公网地址
+        //判断serverIp是否是公网地址
         if (IPUtil.isPublicIP(serverIp)) {
             LogUtil.d(TAG,"当前地址为公网地址:::${serverIp}")
             webSocketUri = "ws://" + if (IPUtil.isIpv6(serverIp)) {
@@ -52,7 +52,7 @@ class VideoPlayerFragment : Fragment() {
             } else {
                 serverIp
             } + ":${Constants.WebSocket.PORT}"
-        }*/
+        }
 
         Log.d(TAG, role.name)
 

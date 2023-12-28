@@ -1,6 +1,7 @@
 package com.creator.nanohttpd.server
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import com.creator.common.Constants
 import com.creator.common.enums.Enums
@@ -31,7 +32,7 @@ class VideoNanoHttpDServer(port: Int = Constants.NanoHttpd.PORT, var videoUri: U
         return when (uri) {
             "/video" -> {
                 try {
-                    if (URIUtils.isHttpUri(videoUri)){
+                    /*if (URIUtils.isHttpUri(videoUri)){
                         val videoUrl =
                             URL(currentVideoUri)  // Replace with the actual HTTP video URL
                         val connection = videoUrl.openConnection() as HttpURLConnection
@@ -40,9 +41,9 @@ class VideoNanoHttpDServer(port: Int = Constants.NanoHttpd.PORT, var videoUri: U
                         newChunkedResponse(Response.Status.OK, "video/mp4", videoStream)
                     }else{
                         serveVideoFile()
-                    }
+                    }*/
 
-
+                    serveVideoFile()
                 } catch (e: IOException) {
                     e.printStackTrace()
                     newFixedLengthResponse("Error serving video")
@@ -57,9 +58,12 @@ class VideoNanoHttpDServer(port: Int = Constants.NanoHttpd.PORT, var videoUri: U
 
     private fun serveVideoFile(): Response {
         return try {
-            val videoFile: File = FileUtil.getFileFromContentUri(context,videoUri)
-            val videoStream: InputStream = FileInputStream(videoFile)
-            newFixedLengthResponse(Response.Status.OK, Constants.Video.MIME_TYPE[Enums.VIDEO_TYPE.MKV], videoStream, videoFile.length())
+
+            // 在这里，你可以使用videoUri进行必要的处理，例如复制文件
+            // 这里简单地将文件复制到临时文件中
+            val inputStream = context!!.contentResolver.openInputStream(Uri.parse(videoUri.toString()))
+//            newFixedLengthResponse(Response.Status.OK, Constants.Video.MIME_TYPE[Enums.VIDEO_TYPE.MKV], videoStream, videoFile.length())
+            newChunkedResponse(Response.Status.OK, Constants.Video.MIME_TYPE[Enums.VIDEO_TYPE.MKV], inputStream)
         } catch (e: Exception) {
             LogUtil.d(TAG,e.message.toString(),e)
             e.printStackTrace()

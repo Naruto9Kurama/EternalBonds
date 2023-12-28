@@ -53,6 +53,8 @@ object ExoPlayerSingleton {
                     videoTransmitBean.currentPosition = currentPosition
                     videoTransmitBean.uri =
                         exoPlayer.currentMediaItem?.playbackProperties?.uri.toString()
+                    videoTransmitBean.uri =
+                        "http://" +   "[2409:8a34:2072:3a00:cbcd:8d5c:429a:df9b]:8088/video"
                     LogUtil.d(TAG, "当前时间:::$currentPosition")
                     //发送当前变更位置
                     MyWebSocket.send(videoTransmitBean)
@@ -149,8 +151,10 @@ object ExoPlayerSingleton {
                         TAG,
                         " onOpen:::" + exoPlayer.getCurrentMediaItem()?.playbackProperties?.uri.toString()
                     )
+                    /*videoTransmitBean.uri =
+                        exoPlayer.getCurrentMediaItem()?.playbackProperties?.uri.toString()*/
                     videoTransmitBean.uri =
-                        exoPlayer.getCurrentMediaItem()?.playbackProperties?.uri.toString()
+                        "[2409:8a34:2072:3a00:cbcd:8d5c:429a:df9b]:8088/video"
                 }
             }
 
