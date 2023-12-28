@@ -7,6 +7,6 @@ android {
 }
 
 dependencies {
-    implementation("org.java-websocket:Java-WebSocket:1.5.4")
+    api("org.java-websocket:Java-WebSocket:1.5.4")
 
 }

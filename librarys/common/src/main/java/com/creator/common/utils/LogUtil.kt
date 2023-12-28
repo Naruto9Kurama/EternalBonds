@@ -8,10 +8,10 @@ object LogUtil {
 
 
     inline fun d(tag:String,msg:String,tr:Throwable?=null){
-        Log.d(TAG+tag,msg,tr)
+        Log.d("$TAG--$tag",msg,tr)
     }
 
     inline fun e(tag:String,msg:String,tr:Throwable?=null){
-        Log.e(TAG+tag,msg,tr)
+        Log.e("$TAG--$tag",msg,tr)
     }
 }

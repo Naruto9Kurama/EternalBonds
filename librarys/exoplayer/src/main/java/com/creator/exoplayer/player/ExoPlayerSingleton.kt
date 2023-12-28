@@ -57,8 +57,7 @@ object ExoPlayerSingleton {
                     //发送当前变更位置
                     MyWebSocket.send(videoTransmitBean)
                 }
-
-
+                isSeekTo = false
             }
         })
 
@@ -111,7 +110,7 @@ object ExoPlayerSingleton {
         class ExoPlayerWebSocketClient constructor(uri: String = websocketUri) :
             org.java_websocket.client.WebSocketClient(URI(uri)) {
             override fun onOpen(handshakedata: ServerHandshake?) {
-                websocket = this
+                websocket = connection
                 LogUtil.d(TAG, "onOpen")
             }
 
@@ -119,7 +118,7 @@ object ExoPlayerSingleton {
                 val videoTransmitBean = VideoTransmitBean.toClass(message)
                 MainThreadExecutor.runOnUiThread {
                     if (videoUri == null) {
-                        setSource(videoTransmitBean.uri, context,true)
+                        setSource(videoTransmitBean.uri, context, true)
                         videoUri = videoTransmitBean.uri
                         play()
                     }
@@ -159,6 +158,7 @@ object ExoPlayerSingleton {
             }
 
             override fun onMessage(conn: WebSocket?, message: String?) {
+                LogUtil.d(TAG, "onMessage:::$message")
                 val toClass = VideoTransmitBean.toClass(message)
                 seekTo(toClass.currentPosition)
             }

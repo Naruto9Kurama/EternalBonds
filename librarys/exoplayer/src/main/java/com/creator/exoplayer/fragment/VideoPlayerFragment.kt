@@ -8,38 +8,48 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.creator.common.Constants
 import com.creator.common.enums.Enums
+import com.creator.common.utils.IPUtil
 import com.creator.common.utils.LogUtil
 import com.creator.exoplayer.databinding.FragmentVideoPlayerBinding
 import com.creator.exoplayer.player.ExoPlayerSingleton
 import com.creator.nanohttpd.server.VideoServer
 
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val VIDEO_ROLE_ENUM_KEY = "VideoRoleEnumKey"
 private const val SERVER_IP_KEY = "ServerIPKey"
-//private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [VideoPlayerFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class VideoPlayerFragment : Fragment() {
     private val TAG = "VideoPlayerFragment"
 
-    // TODO: Rename and change types of parameters
     private var _binding: FragmentVideoPlayerBinding? = null
     private val binding get() = _binding!!
 
     private var role = Enums.VideoRole.Server
     private lateinit var serverIp: String
+    private lateinit var webSocketUri: String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             role = it.getSerializable(VIDEO_ROLE_ENUM_KEY) as Enums.VideoRole
             serverIp = it.getString(SERVER_IP_KEY)!!
         }
+        //判断serverIp是否是公网地址
+        if (IPUtil.isPublicIP(serverIp)) {
+            LogUtil.d(TAG,"当前地址为公网地址:::${serverIp}")
+            webSocketUri = "ws://" + if (IPUtil.isIpv6(serverIp)) {
+                "[$serverIp]"
+            } else {
+                serverIp
+            } + ":${Constants.WebSocket.PORT}"
+        }else{
+            LogUtil.d(TAG,"当前地址为内网地址:::${serverIp}")
+            webSocketUri = "ws://" + if (IPUtil.isIpv6(serverIp)) {
+                "[$serverIp]"
+            } else {
+                serverIp
+            } + ":${Constants.WebSocket.PORT}"
+        }
+
         Log.d(TAG, role.name)
 
     }
@@ -63,11 +73,10 @@ class VideoPlayerFragment : Fragment() {
             }
 
             Enums.VideoRole.Client -> {
-                LogUtil.d(TAG,serverIp)
                 binding.playerView.player = ExoPlayerSingleton.getExoPlayer(
                     requireContext(),
                     Enums.VideoRole.Client,
-                    "ws://[$serverIp]:${Constants.WebSocket.PORT}"
+                    webSocketUri
                 )
 
             }
@@ -81,6 +90,7 @@ class VideoPlayerFragment : Fragment() {
         fun newInstance(param1: Enums.VideoRole, uri: String) =
             VideoPlayerFragment().apply {
                 arguments = Bundle().apply {
+                    //接受传递的参数
                     putSerializable(VIDEO_ROLE_ENUM_KEY, param1)
                     putString(SERVER_IP_KEY, uri)
                 }

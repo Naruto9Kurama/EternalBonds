@@ -62,11 +62,10 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     implementation("com.google.code.gson:gson:2.10.1")
+    /*--------------------------------------------------------------------*/
     implementation(project(":librarys"))
-//    implementation(project(":librarys:webrtc"))
     implementation(project(":librarys:exoplayer"))
     implementation(project(":librarys:common"))
     implementation(project(":librarys:websocket"))
     implementation(project(":librarys:nanohttpd"))
-    implementation("org.java-websocket:Java-WebSocket:1.5.4")
 }

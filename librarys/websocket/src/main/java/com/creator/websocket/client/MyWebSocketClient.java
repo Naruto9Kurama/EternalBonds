@@ -7,17 +7,17 @@ import org.java_websocket.handshake.ServerHandshake;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class WebSocketClient extends org.java_websocket.client.WebSocketClient {
+public class MyWebSocketClient extends org.java_websocket.client.WebSocketClient {
 
     String TAG = "RTCWebSocketClient";
 
-    public WebSocketClient(URI serverUri, String tag) {
+    public MyWebSocketClient(URI serverUri, String tag) {
         super(serverUri);
         TAG = tag;
         connect();
     }
 
-    public WebSocketClient(String serverUri, String tag) throws URISyntaxException {
+    public MyWebSocketClient(String serverUri, String tag) throws URISyntaxException {
         this(new URI(serverUri), tag);
     }
 

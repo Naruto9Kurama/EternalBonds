@@ -23,9 +23,9 @@ data object Constants {
             "http://icanhazip.com",
             "https://api.ipify.org",
             //ipv4
-            "http://checkip.amazonaws.com",//包括地区位置
-            "http://httpbin.org/ip",
-            "http://ip-api.com/json",
+//            "http://checkip.amazonaws.com",//包括地区位置
+//            "http://httpbin.org/ip",
+//            "http://ip-api.com/json",
             "https://ipinfo.io/ip"
         )
     }

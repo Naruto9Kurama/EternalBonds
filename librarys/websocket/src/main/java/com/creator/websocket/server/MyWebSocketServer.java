@@ -3,7 +3,6 @@ package com.creator.websocket.server;
 import android.util.Log;
 
 import com.creator.common.Constants;
-import com.creator.common.bean.VideoTransmitBean;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
@@ -14,29 +13,29 @@ import java.util.Collection;
 import java.util.List;
 
 
-public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
+public class MyWebSocketServer extends org.java_websocket.server.WebSocketServer {
 
-    public WebSocketServer() {
+    public MyWebSocketServer() {
         this(new InetSocketAddress(Constants.WebSocket.PORT));
     }
 
-    public WebSocketServer(InetSocketAddress address) {
+    public MyWebSocketServer(InetSocketAddress address) {
         super(address);
     }
 
-    public WebSocketServer(InetSocketAddress address, int decodercount) {
+    public MyWebSocketServer(InetSocketAddress address, int decodercount) {
         super(address, decodercount);
     }
 
-    public WebSocketServer(InetSocketAddress address, List<Draft> drafts) {
+    public MyWebSocketServer(InetSocketAddress address, List<Draft> drafts) {
         super(address, drafts);
     }
 
-    public WebSocketServer(InetSocketAddress address, int decodercount, List<Draft> drafts) {
+    public MyWebSocketServer(InetSocketAddress address, int decodercount, List<Draft> drafts) {
         super(address, decodercount, drafts);
     }
 
-    public WebSocketServer(InetSocketAddress address, int decodercount, List<Draft> drafts, Collection<WebSocket> connectionscontainer) {
+    public MyWebSocketServer(InetSocketAddress address, int decodercount, List<Draft> drafts, Collection<WebSocket> connectionscontainer) {
         super(address, decodercount, drafts, connectionscontainer);
     }
 

@@ -8,6 +8,7 @@ import okio.IOException
 import java.net.Inet4Address
 import java.net.Inet6Address
 import java.net.InetAddress
+import java.net.NetworkInterface
 import kotlin.experimental.and
 
 object IPUtil {
@@ -36,6 +37,26 @@ object IPUtil {
 
     }
 
+    fun getPublicIpAddress(){
+        Constants.IP.REQUEST_URL.forEach { url ->
+            OkHttpClientUtil.asyncGet(url, object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    kotlin.run {
+                        var string = response.body.string()
+                        LogUtil.d(TAG, string)
+                        if (isPublicIP(string)) {
+                            LogUtil.d(TAG,string)
+                        }
+                    }
+                }
+
+            })
+        }
+    }
+
     fun isPublicIP(ipAddress: String): Boolean {
         return isPublicIP(InetAddress.getByName(ipAddress))
     }
@@ -53,6 +74,18 @@ object IPUtil {
         return false;
     }
 
+    fun isIpv6(ipAddress: String): Boolean {
+        when (InetAddress.getByName(ipAddress)) {
+            is Inet4Address -> {
+                return false
+            }
+
+            is Inet6Address -> {
+                return true
+            }
+        }
+        return false;
+    }
     fun isPublicIPv4(ipAddress: Inet4Address): Boolean {
         return try {
             val addressBytes = ipAddress.address
@@ -74,6 +107,32 @@ object IPUtil {
             LogUtil.e(TAG, e.message.toString(), e)
             false
         }
+    }
+
+
+    fun isIPv6Supported(): Boolean {
+        try {
+            val networkInterfaces = NetworkInterface.getNetworkInterfaces()
+
+            while (networkInterfaces.hasMoreElements()) {
+                val networkInterface = networkInterfaces.nextElement()
+                val addresses = networkInterface.inetAddresses
+
+                while (addresses.hasMoreElements()) {
+                    val address = addresses.nextElement()
+
+                    if (address is Inet6Address) {
+                        // 如果发现IPv6地址，说明设备支持IPv6
+                        return true
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        // 如果没有发现IPv6地址，说明设备不支持IPv6
+        return false
     }
 
 }
