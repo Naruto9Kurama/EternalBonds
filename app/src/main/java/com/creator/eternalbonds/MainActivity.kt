@@ -3,13 +3,20 @@ package com.creator.eternalbonds
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.creator.common.Constants
 import com.creator.common.enums.Enums
+import com.creator.common.utils.LogUtil
 import com.creator.eternalbonds.databinding.ActivityMainBinding
+import java.net.URI
+
 
 class MainActivity : AppCompatActivity() {
 
+    private val TAG="MainActivity"
     private lateinit var binding: ActivityMainBinding
 
+    private lateinit var videoAddress:String
+    private lateinit var uri: URI
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -20,6 +27,7 @@ class MainActivity : AppCompatActivity() {
         binding.faqi.setOnClickListener {
             val intent = Intent(this, VideoActivity::class.java)
             intent.putExtra("test",Enums.VideoRole.Server.name)
+            intent.putExtra("filePath",uri)
             startActivity(intent)
         }
 
@@ -31,6 +39,15 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        binding.chooseFile.setOnClickListener {
+            // 启动文件选择器
+            // 启动文件选择器
+            val intent = Intent(Intent.ACTION_GET_CONTENT)
+            intent.type = "video/*"
+            startActivityForResult(intent, Enums.FileRequestCode.VIDEO.ordinal)
+        }
+
+
         //27.149.25.162
         /*val webSocketServer = WebSocketServer()
         webSocketServer.start()*/
@@ -38,7 +55,16 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == Enums.FileRequestCode.VIDEO.ordinal && resultCode == RESULT_OK) {
+            // 处理选择的视频文件
+            val videoAddress = data?.data
+             uri = URI.create(videoAddress.toString())
+            LogUtil.d(TAG, uri.toString())
+            // 这里可以使用 selectedVideoUri 操作选择的视频文件
+        }
+    }
 
 
 

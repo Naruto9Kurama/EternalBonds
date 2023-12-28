@@ -18,6 +18,14 @@
         app:layout_constraintRight_toRightOf="parent"
         android:text="客户端"/>
 
+    <Button
+        android:id="@+id/chooseFile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:text="选择文件"/>
+
     <EditText
         android:id="@+id/ipEdit"
         app:layout_constraintRight_toRightOf="parent"

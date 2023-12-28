@@ -1,17 +1,21 @@
 package com.creator.eternalbonds
 
+import android.os.Build
 import android.os.Bundle
 import android.view.ViewTreeObserver
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.creator.common.enums.Enums
 import com.creator.common.utils.IPUtil
 import com.creator.eternalbonds.databinding.ActivityVideoBinding
 import com.creator.exoplayer.fragment.VideoPlayerFragment
 import com.creator.exoplayer.player.ExoPlayerSingleton
+import java.net.URI
 
 class VideoActivity : AppCompatActivity() {
     private lateinit var binding: ActivityVideoBinding
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -36,9 +40,10 @@ class VideoActivity : AppCompatActivity() {
         // 从 Intent 中获取枚举值的字符串表示
         val enumString = intent.getStringExtra("test") ?: ""
         val ip = intent.getStringExtra("ip") ?: ""
+        val uri = intent.getSerializableExtra("filePath", URI::class.java)
 
         val enumValue = Enums.VideoRole.valueOf(enumString)
-        val fragment = VideoPlayerFragment.newInstance(enumValue, ip)
+        val fragment = VideoPlayerFragment.newInstance(enumValue, ip,uri)
 
         // 使用 FragmentManager 启动 Fragment
         supportFragmentManager.beginTransaction()

@@ -1,5 +1,7 @@
 package com.creator.common
 
+import com.creator.common.enums.Enums
+
 
 data object Constants {
 
@@ -27,6 +29,14 @@ data object Constants {
 //            "http://httpbin.org/ip",
 //            "http://ip-api.com/json",
             "https://ipinfo.io/ip"
+        )
+    }
+
+
+    object Video{
+       val MIME_TYPE= mapOf<Enums.VIDEO_TYPE,String>(
+            Enums.VIDEO_TYPE.MKV to "video/x-matroska",
+            Enums.VIDEO_TYPE.MP4 to "video/mp4",
         )
     }
 

@@ -5,4 +5,11 @@ object Enums {
         Client, Server
     }
 
+    enum class FileRequestCode{
+        VIDEO,PHOTO
+    }
+
+    enum class VIDEO_TYPE{
+        MP4,MKV
+    }
 }
