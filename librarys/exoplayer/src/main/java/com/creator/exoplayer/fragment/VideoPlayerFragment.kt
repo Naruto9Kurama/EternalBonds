@@ -29,15 +29,15 @@ class VideoPlayerFragment : Fragment() {
     private var role = Enums.VideoRole.Server
     private lateinit var serverIp: String
     private lateinit var webSocketUri: String
-    private lateinit var uri: URI
+    private lateinit var uri: String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             role = it.getSerializable(VIDEO_ROLE_ENUM_KEY) as Enums.VideoRole
-            uri = it.getSerializable(SERVER_IP_KEY) as URI
-            serverIp = it.getString(URI_KEY)!!
+            serverIp = it.getString(SERVER_IP_KEY)!!
+            uri = it.getString(URI_KEY)!!
         }
-        //判断serverIp是否是公网地址
+        /*//判断serverIp是否是公网地址
         if (IPUtil.isPublicIP(serverIp)) {
             LogUtil.d(TAG,"当前地址为公网地址:::${serverIp}")
             webSocketUri = "ws://" + if (IPUtil.isIpv6(serverIp)) {
@@ -52,7 +52,7 @@ class VideoPlayerFragment : Fragment() {
             } else {
                 serverIp
             } + ":${Constants.WebSocket.PORT}"
-        }
+        }*/
 
         Log.d(TAG, role.name)
 
@@ -68,7 +68,7 @@ class VideoPlayerFragment : Fragment() {
                 binding.playerView.player =
                     ExoPlayerSingleton.getExoPlayer(requireContext(), Enums.VideoRole.Server)
 
-                val videoNanoHttpDServer = VideoNanoHttpDServer(videoUri = uri)
+                val videoNanoHttpDServer = VideoNanoHttpDServer(videoUri = URI.create(uri), context = context)
                 videoNanoHttpDServer.start()
 
                 ExoPlayerSingleton.setSource(
@@ -93,12 +93,12 @@ class VideoPlayerFragment : Fragment() {
     companion object {
 
         @JvmStatic
-        fun newInstance(param1: Enums.VideoRole, ip: String,uri: URI?) =
+        fun newInstance(param1: Enums.VideoRole, ip: String,uri: String?) =
             VideoPlayerFragment().apply {
                 arguments = Bundle().apply {
                     //接受传递的参数
                     putSerializable(VIDEO_ROLE_ENUM_KEY, param1)
-                    putSerializable(URI_KEY, uri)
+                    putString(URI_KEY, uri)
                     putString(SERVER_IP_KEY, ip)
                 }
             }

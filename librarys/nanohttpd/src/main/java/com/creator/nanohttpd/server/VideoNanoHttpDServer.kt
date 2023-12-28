@@ -1,8 +1,11 @@
 package com.creator.nanohttpd.server
 
+import android.content.Context
 import android.util.Log
 import com.creator.common.Constants
 import com.creator.common.enums.Enums
+import com.creator.common.utils.FileUtil
+import com.creator.common.utils.LogUtil
 import com.creator.common.utils.URIUtils
 import fi.iki.elonen.NanoHTTPD
 import java.io.File
@@ -14,7 +17,7 @@ import java.net.URI
 import java.net.URL
 
 
-class VideoNanoHttpDServer(port: Int = Constants.NanoHttpd.PORT, var videoUri: URI? = null) :
+class VideoNanoHttpDServer(port: Int = Constants.NanoHttpd.PORT, var videoUri: URI? = null,val context: Context?=null) :
     NanoHTTPD(port) {
     constructor(port: Int = Constants.NanoHttpd.PORT, uri: String) : this(port, URI(uri))
 
@@ -54,10 +57,11 @@ class VideoNanoHttpDServer(port: Int = Constants.NanoHttpd.PORT, var videoUri: U
 
     private fun serveVideoFile(): Response {
         return try {
-            val videoFile: File = File(videoUri)
+            val videoFile: File = FileUtil.getFileFromContentUri(context,videoUri)
             val videoStream: InputStream = FileInputStream(videoFile)
             newFixedLengthResponse(Response.Status.OK, Constants.Video.MIME_TYPE[Enums.VIDEO_TYPE.MKV], videoStream, videoFile.length())
-        } catch (e: IOException) {
+        } catch (e: Exception) {
+            LogUtil.d(TAG,e.message.toString(),e)
             e.printStackTrace()
             newFixedLengthResponse(
                 Response.Status.INTERNAL_ERROR,

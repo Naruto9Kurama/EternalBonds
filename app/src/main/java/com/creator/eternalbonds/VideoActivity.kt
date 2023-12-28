@@ -15,7 +15,6 @@ import java.net.URI
 class VideoActivity : AppCompatActivity() {
     private lateinit var binding: ActivityVideoBinding
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -40,7 +39,7 @@ class VideoActivity : AppCompatActivity() {
         // 从 Intent 中获取枚举值的字符串表示
         val enumString = intent.getStringExtra("test") ?: ""
         val ip = intent.getStringExtra("ip") ?: ""
-        val uri = intent.getSerializableExtra("filePath", URI::class.java)
+        val uri = intent.getStringExtra("filePath")
 
         val enumValue = Enums.VideoRole.valueOf(enumString)
         val fragment = VideoPlayerFragment.newInstance(enumValue, ip,uri)

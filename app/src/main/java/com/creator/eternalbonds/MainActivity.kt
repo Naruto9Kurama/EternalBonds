@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         binding.faqi.setOnClickListener {
             val intent = Intent(this, VideoActivity::class.java)
             intent.putExtra("test",Enums.VideoRole.Server.name)
-            intent.putExtra("filePath",uri)
+            intent.putExtra("filePath",uri.toString())
             startActivity(intent)
         }
 
