@@ -34,7 +34,6 @@ class VideoActivity : AppCompatActivity() {
             }
         })
 
-
         // 启动 Fragment，并传递枚举值
         // 从 Intent 中获取枚举值的字符串表示
         val enumString = intent.getStringExtra("test") ?: ""
@@ -42,7 +41,7 @@ class VideoActivity : AppCompatActivity() {
         val uri = intent.getStringExtra("filePath")
 
         val enumValue = Enums.VideoRole.valueOf(enumString)
-        val fragment = VideoPlayerFragment.newInstance(enumValue, ip,uri)
+        val fragment = VideoPlayerFragment.newInstance(enumValue, ip, uri)
 
         // 使用 FragmentManager 启动 Fragment
         supportFragmentManager.beginTransaction()

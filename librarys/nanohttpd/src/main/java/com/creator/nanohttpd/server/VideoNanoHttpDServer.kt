@@ -18,7 +18,11 @@ import java.net.URI
 import java.net.URL
 
 
-class VideoNanoHttpDServer(port: Int = Constants.NanoHttpd.PORT, var videoUri: URI? = null,val context: Context?=null) :
+class VideoNanoHttpDServer(
+    port: Int = Constants.NanoHttpd.PORT,
+    var videoUri: URI? = null,
+    val context: Context? = null
+) :
     NanoHTTPD(port) {
     constructor(port: Int = Constants.NanoHttpd.PORT, uri: String) : this(port, URI(uri))
 
@@ -32,18 +36,15 @@ class VideoNanoHttpDServer(port: Int = Constants.NanoHttpd.PORT, var videoUri: U
         return when (uri) {
             "/video" -> {
                 try {
-                    /*if (URIUtils.isHttpUri(videoUri)){
-                        val videoUrl =
-                            URL(currentVideoUri)  // Replace with the actual HTTP video URL
+                    if (URIUtils.isHttpUri(videoUri)) {
+                        val videoUrl =URL(videoUri.toString())  // Replace with the actual HTTP video URL
                         val connection = videoUrl.openConnection() as HttpURLConnection
                         connection.connect()
                         val videoStream: InputStream = connection.inputStream
                         newChunkedResponse(Response.Status.OK, "video/mp4", videoStream)
-                    }else{
+                    } else {
                         serveVideoFile()
-                    }*/
-
-                    serveVideoFile()
+                    }
                 } catch (e: IOException) {
                     e.printStackTrace()
                     newFixedLengthResponse("Error serving video")
@@ -61,11 +62,16 @@ class VideoNanoHttpDServer(port: Int = Constants.NanoHttpd.PORT, var videoUri: U
 
             // 在这里，你可以使用videoUri进行必要的处理，例如复制文件
             // 这里简单地将文件复制到临时文件中
-            val inputStream = context!!.contentResolver.openInputStream(Uri.parse(videoUri.toString()))
+            val inputStream =
+                context!!.contentResolver.openInputStream(Uri.parse(videoUri.toString()))
 //            newFixedLengthResponse(Response.Status.OK, Constants.Video.MIME_TYPE[Enums.VIDEO_TYPE.MKV], videoStream, videoFile.length())
-            newChunkedResponse(Response.Status.OK, Constants.Video.MIME_TYPE[Enums.VIDEO_TYPE.MKV], inputStream)
+            newChunkedResponse(
+                Response.Status.OK,
+                Constants.Video.MIME_TYPE[Enums.VIDEO_TYPE.MP4],
+                inputStream
+            )
         } catch (e: Exception) {
-            LogUtil.d(TAG,e.message.toString(),e)
+            LogUtil.d(TAG, e.message.toString(), e)
             e.printStackTrace()
             newFixedLengthResponse(
                 Response.Status.INTERNAL_ERROR,

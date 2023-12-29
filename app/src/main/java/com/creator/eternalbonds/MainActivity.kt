@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.creator.common.enums.Enums
 import com.creator.common.utils.LogUtil
 import com.creator.eternalbonds.databinding.ActivityMainBinding
+import com.creator.nanohttpd.server.VideoNanoHttpDServer
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -36,6 +37,8 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra("test",Enums.VideoRole.Server.name)
             intent.putExtra("filePath",uri.toString())
             startActivity(intent)
+//            VideoNanoHttpDServer(videoUri = uri, context = this).start()
+//            VideoNanoHttpDServer(uri = "http://vfx.mtime.cn/Video/2018/07/06/mp4/180706094003288023.mp4").start()
         }
 
         binding.rec.setOnClickListener {
@@ -47,7 +50,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.chooseFile.setOnClickListener {
-            // 启动文件选择器
             // 启动文件选择器
             val intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.type = "video/*"

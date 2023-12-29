@@ -35,23 +35,27 @@ class VideoPlayerFragment : Fragment() {
         arguments?.let {
             role = it.getSerializable(VIDEO_ROLE_ENUM_KEY) as Enums.VideoRole
             serverIp = it.getString(SERVER_IP_KEY)!!
-//            uri = it.getString(URI_KEY)!!
+            if (role == Enums.VideoRole.Server) {
+                uri = it.getString(URI_KEY)!!
+            }
         }
-        //判断serverIp是否是公网地址
-        if (IPUtil.isPublicIP(serverIp)) {
-            LogUtil.d(TAG,"当前地址为公网地址:::${serverIp}")
-            webSocketUri = "ws://" + if (IPUtil.isIpv6(serverIp)) {
-                "[$serverIp]"
+        if (role == Enums.VideoRole.Client){
+            //判断serverIp是否是公网地址
+            if (IPUtil.isPublicIP(serverIp)) {
+                LogUtil.d(TAG, "当前地址为公网地址:::${serverIp}")
+                webSocketUri = "ws://" + if (IPUtil.isIpv6(serverIp)) {
+                    "[$serverIp]"
+                } else {
+                    serverIp
+                } + ":${Constants.WebSocket.PORT}"
             } else {
-                serverIp
-            } + ":${Constants.WebSocket.PORT}"
-        }else{
-            LogUtil.d(TAG,"当前地址为内网地址:::${serverIp}")
-            webSocketUri = "ws://" + if (IPUtil.isIpv6(serverIp)) {
-                "[$serverIp]"
-            } else {
-                serverIp
-            } + ":${Constants.WebSocket.PORT}"
+                LogUtil.d(TAG, "当前地址为内网地址:::${serverIp}")
+                webSocketUri = "ws://" + if (IPUtil.isIpv6(serverIp)) {
+                    "[$serverIp]"
+                } else {
+                    serverIp
+                } + ":${Constants.WebSocket.PORT}"
+            }
         }
 
         Log.d(TAG, role.name)
@@ -68,7 +72,8 @@ class VideoPlayerFragment : Fragment() {
                 binding.playerView.player =
                     ExoPlayerSingleton.getExoPlayer(requireContext(), Enums.VideoRole.Server)
 
-                val videoNanoHttpDServer = VideoNanoHttpDServer(videoUri = URI.create(uri), context = context)
+                val videoNanoHttpDServer =
+                    VideoNanoHttpDServer(videoUri = URI.create(uri), context = context)
                 videoNanoHttpDServer.start()
 
                 ExoPlayerSingleton.setSource(
@@ -84,8 +89,8 @@ class VideoPlayerFragment : Fragment() {
                     Enums.VideoRole.Client,
                     webSocketUri
                 )
-
             }
+
         }
         return binding.root
     }
@@ -93,7 +98,7 @@ class VideoPlayerFragment : Fragment() {
     companion object {
 
         @JvmStatic
-        fun newInstance(param1: Enums.VideoRole, ip: String,uri: String?) =
+        fun newInstance(param1: Enums.VideoRole, ip: String, uri: String?) =
             VideoPlayerFragment().apply {
                 arguments = Bundle().apply {
                     //接受传递的参数
