@@ -5,12 +5,9 @@ import android.net.Uri
 import android.util.Log
 import com.creator.common.Constants
 import com.creator.common.enums.Enums
-import com.creator.common.utils.FileUtil
 import com.creator.common.utils.LogUtil
 import com.creator.common.utils.URIUtils
 import fi.iki.elonen.NanoHTTPD
-import java.io.File
-import java.io.FileInputStream
 import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
@@ -32,12 +29,13 @@ class VideoNanoHttpDServer(
 
     override fun serve(session: IHTTPSession): Response {
         val uri = session.uri
-        Log.d(TAG, "当前访问uri:::$uri")
+        LogUtil.d(TAG, "当前访问uri:::$uri")
         return when (uri) {
             "/video" -> {
                 try {
                     if (URIUtils.isHttpUri(videoUri)) {
-                        val videoUrl =URL(videoUri.toString())  // Replace with the actual HTTP video URL
+                        val videoUrl =
+                            URL(videoUri.toString())  // Replace with the actual HTTP video URL
                         val connection = videoUrl.openConnection() as HttpURLConnection
                         connection.connect()
                         val videoStream: InputStream = connection.inputStream
@@ -59,15 +57,12 @@ class VideoNanoHttpDServer(
 
     private fun serveVideoFile(): Response {
         return try {
-
-            // 在这里，你可以使用videoUri进行必要的处理，例如复制文件
-            // 这里简单地将文件复制到临时文件中
             val inputStream =
                 context!!.contentResolver.openInputStream(Uri.parse(videoUri.toString()))
 //            newFixedLengthResponse(Response.Status.OK, Constants.Video.MIME_TYPE[Enums.VIDEO_TYPE.MKV], videoStream, videoFile.length())
             newChunkedResponse(
                 Response.Status.OK,
-                Constants.Video.MIME_TYPE[Enums.VIDEO_TYPE.MP4],
+                Constants.Video.MIME_TYPE[Enums.VideoType.MP4],
                 inputStream
             )
         } catch (e: Exception) {

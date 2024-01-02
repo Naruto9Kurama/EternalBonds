@@ -3,12 +3,11 @@ package com.creator.exoplayer.player
 import MainThreadExecutor
 import android.annotation.SuppressLint
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import android.widget.Toast
 import com.creator.common.Constants
 import com.creator.common.bean.VideoTransmitBean
 import com.creator.common.enums.Enums
+import com.creator.common.utils.IPUtil
 import com.creator.common.utils.LogUtil
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
@@ -28,22 +27,43 @@ import java.net.URI
 object ExoPlayerSingleton {
     private const val TAG = "ExoPlayerSingleton"
     private lateinit var exoPlayer: ExoPlayer
-    private lateinit var videoRole: Enums.VideoRole
+    private lateinit var playerRole: Enums.PlayerRole
     private var videoUri: String? = null
 
     //    private var videoUri = MutableLiveData<String>()
     private lateinit var websocketUri: String
+    private lateinit var serverIp: String
     private lateinit var context: Context
     private var isSeekTo: Boolean = false
+    private var isLocal: Boolean = true
     fun getExoPlayer(
         context: Context,
-        videoRole: Enums.VideoRole,
-        websocketUri: String = ""
+        playerRole: Enums.PlayerRole,
+        serverIp: String? = null,
+        isLocal: Boolean = true
     ): ExoPlayer {
         exoPlayer = ExoPlayer.Builder(context).build();
-        this.websocketUri = websocketUri
+        if (serverIp != null) {
+            //判断ip是否为ipv6
+            if (IPUtil.isIpv6(serverIp)) {
+                this.serverIp = "[$serverIp]"
+            } else {
+                this.serverIp = serverIp
+            }
+        }
+        this.websocketUri = "ws://${serverIp}:${Constants.WebSocket.PORT}"
         this.context = context
-        this.videoRole = videoRole
+        this.playerRole = playerRole
+        this.isLocal = isLocal
+        when(playerRole){
+            Enums.PlayerRole.Client->{}
+            Enums.PlayerRole.Server->{
+                if (!isLocal) {
+                    videoUri = "http://${this.serverIp}:${Constants.NanoHttpd.PORT}/video"
+                }
+            }
+        }
+
         exoPlayer.addListener(object : Player.Listener {
             override fun onPositionDiscontinuity(reason: Int) {
                 super.onPositionDiscontinuity(reason)
@@ -51,10 +71,7 @@ object ExoPlayerSingleton {
                     val currentPosition = exoPlayer.currentPosition
                     val videoTransmitBean = VideoTransmitBean()
                     videoTransmitBean.currentPosition = currentPosition
-                    videoTransmitBean.uri =
-                        exoPlayer.currentMediaItem?.playbackProperties?.uri.toString()
-                    videoTransmitBean.uri =
-                        "http://" +   "[2409:8a34:2072:3a00:cbcd:8d5c:429a:df9b]:8088/video"
+                    videoTransmitBean.uri = videoUri
                     LogUtil.d(TAG, "当前时间:::$currentPosition")
                     //发送当前变更位置
                     MyWebSocket.send(videoTransmitBean)
@@ -98,17 +115,20 @@ object ExoPlayerSingleton {
         private lateinit var websocket: WebSocket
 
         init {
-            when (videoRole) {
-                Enums.VideoRole.Client -> {
+            //根据播放器角色创建对应的websocket类
+            when (playerRole) {
+                Enums.PlayerRole.Client -> {
                     ExoPlayerWebSocketClient().connect()
                 }
 
-                Enums.VideoRole.Server -> {
+                Enums.PlayerRole.Server -> {
                     ExoPlayerWebSocketServer().start()
                 }
             }
         }
-
+        /**
+         * 播放器客户端
+         */
         class ExoPlayerWebSocketClient constructor(uri: String = websocketUri) :
             org.java_websocket.client.WebSocketClient(URI(uri)) {
             override fun onOpen(handshakedata: ServerHandshake?) {
@@ -119,15 +139,13 @@ object ExoPlayerSingleton {
             override fun onMessage(message: String?) {
                 val videoTransmitBean = VideoTransmitBean.toClass(message)
                 MainThreadExecutor.runOnUiThread {
-                    if (videoUri == null) {
+                    if (videoUri == null && videoUri!=videoTransmitBean.uri) {
                         setSource(videoTransmitBean.uri, context, true)
                         videoUri = videoTransmitBean.uri
                         play()
                     }
-
                     seekTo(videoTransmitBean.currentPosition)
                 }
-
             }
 
             override fun onClose(code: Int, reason: String?, remote: Boolean) {
@@ -139,22 +157,25 @@ object ExoPlayerSingleton {
             }
         }
 
+
+        /**
+         * 播放器服务端
+         */
         class ExoPlayerWebSocketServer constructor(port: Int = Constants.WebSocket.PORT) :
             WebSocketServer(InetSocketAddress(port)) {
             override fun onOpen(conn: WebSocket, handshake: ClientHandshake?) {
                 websocket = conn
 
+                //websocket客户端连接后，向客户端发送视频信息
                 MainThreadExecutor.runOnUiThread {
                     val videoTransmitBean = VideoTransmitBean()
                     videoTransmitBean.currentPosition = exoPlayer.currentPosition
                     LogUtil.d(
                         TAG,
-                        " onOpen:::" + exoPlayer.getCurrentMediaItem()?.playbackProperties?.uri.toString()
+                        " onOpen:::" + exoPlayer.currentMediaItem?.playbackProperties?.uri.toString()
                     )
-                    /*videoTransmitBean.uri =
-                        exoPlayer.getCurrentMediaItem()?.playbackProperties?.uri.toString()*/
-                    videoTransmitBean.uri =
-                        "[2409:8a34:2072:3a00:cbcd:8d5c:429a:df9b]:8088/video"
+                    videoTransmitBean.uri = videoUri
+                    send(videoTransmitBean)
                 }
             }
 

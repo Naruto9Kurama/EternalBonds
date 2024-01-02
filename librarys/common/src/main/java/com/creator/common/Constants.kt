@@ -34,10 +34,11 @@ data object Constants {
 
 
     object Video{
-       val MIME_TYPE= mapOf<Enums.VIDEO_TYPE,String>(
-            Enums.VIDEO_TYPE.MKV to "video/x-matroska",
-            Enums.VIDEO_TYPE.MP4 to "video/mp4",
+       val MIME_TYPE= mapOf<Enums.VideoType,String>(
+            Enums.VideoType.MKV to "video/x-matroska",
+            Enums.VideoType.MP4 to "video/mp4",
         )
     }
+
 
 }

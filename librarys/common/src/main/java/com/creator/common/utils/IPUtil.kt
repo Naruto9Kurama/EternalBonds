@@ -37,7 +37,7 @@ object IPUtil {
 
     }
 
-    fun getPublicIpAddress(){
+    fun getPublicIpAddress() {
         Constants.IP.REQUEST_URL.forEach { url ->
             OkHttpClientUtil.asyncGet(url, object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
@@ -48,7 +48,7 @@ object IPUtil {
                         var string = response.body.string()
                         LogUtil.d(TAG, string)
                         if (isPublicIP(string)) {
-                            LogUtil.d(TAG,string)
+                            LogUtil.d(TAG, string)
                         }
                     }
                 }
@@ -86,6 +86,7 @@ object IPUtil {
         }
         return false;
     }
+
     fun isPublicIPv4(ipAddress: Inet4Address): Boolean {
         return try {
             val addressBytes = ipAddress.address
@@ -95,6 +96,16 @@ object IPUtil {
                     || (addressBytes[0] == 192.toByte() && addressBytes[1] == 168.toByte()))
         } catch (e: Exception) {
             LogUtil.e(TAG, e.message.toString(), e)
+            false
+        }
+    }
+
+    fun isPublicIPv6(ipAddress: String): Boolean {
+        val inetAddress = InetAddress.getByName(ipAddress)
+
+        return if (inetAddress is Inet6Address) {
+            isPublicIPv6(inetAddress)
+        } else {
             false
         }
     }

@@ -1,18 +1,17 @@
 package com.creator.exoplayer.fragment
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.creator.common.Constants
 import com.creator.common.enums.Enums
-import com.creator.common.utils.IPUtil
 import com.creator.common.utils.LogUtil
+import com.creator.common.utils.URIUtils
 import com.creator.exoplayer.databinding.FragmentVideoPlayerBinding
 import com.creator.exoplayer.player.ExoPlayerSingleton
 import com.creator.nanohttpd.server.VideoNanoHttpDServer
+import com.google.gson.Gson
 import java.net.URI
 
 
@@ -26,40 +25,36 @@ class VideoPlayerFragment : Fragment() {
     private var _binding: FragmentVideoPlayerBinding? = null
     private val binding get() = _binding!!
 
-    private var role = Enums.VideoRole.Server
-    private lateinit var serverIp: String
-    private lateinit var webSocketUri: String
-    private lateinit var uri: String
+    private var playerRole = Enums.PlayerRole.Server
+    private lateinit var cIp: String
+    private lateinit var cWebSocketUri: String
+//    private lateinit var uri: String
+    private lateinit var sVideoUri: String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            role = it.getSerializable(VIDEO_ROLE_ENUM_KEY) as Enums.VideoRole
-            serverIp = it.getString(SERVER_IP_KEY)!!
-            if (role == Enums.VideoRole.Server) {
-                uri = it.getString(URI_KEY)!!
-            }
-        }
-        if (role == Enums.VideoRole.Client){
-            //判断serverIp是否是公网地址
-            if (IPUtil.isPublicIP(serverIp)) {
-                LogUtil.d(TAG, "当前地址为公网地址:::${serverIp}")
-                webSocketUri = "ws://" + if (IPUtil.isIpv6(serverIp)) {
-                    "[$serverIp]"
-                } else {
-                    serverIp
-                } + ":${Constants.WebSocket.PORT}"
-            } else {
-                LogUtil.d(TAG, "当前地址为内网地址:::${serverIp}")
-                webSocketUri = "ws://" + if (IPUtil.isIpv6(serverIp)) {
-                    "[$serverIp]"
-                } else {
-                    serverIp
-                } + ":${Constants.WebSocket.PORT}"
-            }
-        }
+            //获取参数
+            val param = Gson().fromJson<Map<String, Any>>(
+                it.getString(ParamKey.PARAM_MAP.name),
+                Map::class.java
+            )
+            LogUtil.d(TAG, param.toString())
+            //获取播放器角色
 
-        Log.d(TAG, role.name)
+            playerRole = Enums.PlayerRole.valueOf(param[ParamKey.VIDEO_ROLE.name] as String)
+            when (playerRole) {
+                //服务端
+                Enums.PlayerRole.Server -> {
+                    sVideoUri = param[ParamKey.VIDEO_URI.name] as String
+                }
+                //客户端
+                Enums.PlayerRole.Client -> {
+                    cIp = param[ParamKey.SERVER_IP.name] as String
+                }
+            }
 
+
+        }
     }
 
     override fun onCreateView(
@@ -67,27 +62,33 @@ class VideoPlayerFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentVideoPlayerBinding.inflate(inflater, container, false)
-        when (role) {
-            Enums.VideoRole.Server -> {
-                binding.playerView.player =
-                    ExoPlayerSingleton.getExoPlayer(requireContext(), Enums.VideoRole.Server)
 
-                val videoNanoHttpDServer =
-                    VideoNanoHttpDServer(videoUri = URI.create(uri), context = context)
-                videoNanoHttpDServer.start()
+        //通过播放器角色，创建播放
+        when (playerRole) {
+            Enums.PlayerRole.Server -> {
+                var isLocal=true
+                if (!URIUtils.isHttpUri(sVideoUri)){
+                    val videoNanoHttpDServer =
+                        VideoNanoHttpDServer(videoUri = URI.create(sVideoUri), context = context)
+                    videoNanoHttpDServer.start()
+                    isLocal=false
+                }
+                binding.playerView.player =
+                    ExoPlayerSingleton.getExoPlayer(requireContext(), Enums.PlayerRole.Server,isLocal=isLocal, serverIp = "192.168.2.159")
 
                 ExoPlayerSingleton.setSource(
-                    "http://vfx.mtime.cn/Video/2018/07/06/mp4/180706094003288023.mp4",
+                    sVideoUri,
                     requireContext()
                 )
                 ExoPlayerSingleton.play()
             }
 
-            Enums.VideoRole.Client -> {
+            Enums.PlayerRole.Client -> {
                 binding.playerView.player = ExoPlayerSingleton.getExoPlayer(
                     requireContext(),
-                    Enums.VideoRole.Client,
-                    webSocketUri
+                    Enums.PlayerRole.Client,
+                    cIp,
+                    isLocal=false
                 )
             }
 
@@ -97,15 +98,28 @@ class VideoPlayerFragment : Fragment() {
 
     companion object {
 
+        /* @JvmStatic
+         fun newInstance(param1: Enums.VideoRole, ip: String, uri: String?) =
+             VideoPlayerFragment().apply {
+                 arguments = Bundle().apply {
+                     //接受传递的参数
+                     putSerializable(VIDEO_ROLE_ENUM_KEY, param1)
+                     putString(URI_KEY, uri)
+                     putString(SERVER_IP_KEY, ip)
+                 }
+             }*/
+
         @JvmStatic
-        fun newInstance(param1: Enums.VideoRole, ip: String, uri: String?) =
+        fun newInstance(param: Map<String, Any?>) =
             VideoPlayerFragment().apply {
                 arguments = Bundle().apply {
                     //接受传递的参数
-                    putSerializable(VIDEO_ROLE_ENUM_KEY, param1)
-                    putString(URI_KEY, uri)
-                    putString(SERVER_IP_KEY, ip)
+                    putString(ParamKey.PARAM_MAP.name, Gson().toJson(param))
                 }
             }
+
+        enum class ParamKey {
+            PARAM_MAP, VIDEO_ROLE, SERVER_IP, VIDEO_URI
+        }
     }
 }

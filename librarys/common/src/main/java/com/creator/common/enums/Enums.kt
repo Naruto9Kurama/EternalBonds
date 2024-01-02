@@ -1,7 +1,7 @@
 package com.creator.common.enums
 
 object Enums {
-    enum class VideoRole{
+    enum class PlayerRole{
         Client, Server
     }
 
@@ -9,7 +9,10 @@ object Enums {
         VIDEO,PHOTO
     }
 
-    enum class VIDEO_TYPE{
+    enum class VideoType{
         MP4,MKV
+    }
+    enum class PlaybackSource{
+        LOCAL_FILES,HTTP,SCREEN_CASTING
     }
 }

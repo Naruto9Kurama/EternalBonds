@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".fragment.ChooseVideoFragment">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+
+        <RadioGroup
+            android:id="@+id/playbackRadioGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/localFilesRadioButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="本地文件" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/chooseFileBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="选择文件" />
+
+                <TextView
+                    android:id="@+id/chooseFilePathText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <RadioButton
+                android:id="@+id/httpRadioButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="http地址" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+
+                <EditText
+                    android:id="@+id/httpEditText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:hint="请输入http视频地址" />
+            </LinearLayout>
+
+            <RadioButton
+                android:id="@+id/screenCastingRadioButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="投屏" />
+
+
+        </RadioGroup>
+
+        <Button
+            android:id="@+id/startPlayer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="开启服务端" />
+
+
+        <EditText
+            android:id="@+id/ipEditText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="请输入服务端ip"/>
+        <Button
+            android:id="@+id/startClientPlayer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="开启客户端" />
+    </LinearLayout>
+
+
+</FrameLayout>
