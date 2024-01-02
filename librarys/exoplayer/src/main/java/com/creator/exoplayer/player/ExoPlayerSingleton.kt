@@ -12,9 +12,12 @@ import com.creator.common.utils.LogUtil
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.util.Log
+import com.google.android.exoplayer2.util.Util
 import org.java_websocket.WebSocket
 import org.java_websocket.handshake.ClientHandshake
 import org.java_websocket.handshake.ServerHandshake
@@ -42,7 +45,8 @@ object ExoPlayerSingleton {
         serverIp: String? = null,
         isLocal: Boolean = true
     ): ExoPlayer {
-        exoPlayer = ExoPlayer.Builder(context).build();
+        Log.setLogLevel(Log.LOG_LEVEL_ALL)
+        exoPlayer = ExoPlayer.Builder(context).setUseLazyPreparation(false).build();
         if (serverIp != null) {
             //判断ip是否为ipv6
             if (IPUtil.isIpv6(serverIp)) {
@@ -55,9 +59,9 @@ object ExoPlayerSingleton {
         this.context = context
         this.playerRole = playerRole
         this.isLocal = isLocal
-        when(playerRole){
-            Enums.PlayerRole.Client->{}
-            Enums.PlayerRole.Server->{
+        when (playerRole) {
+            Enums.PlayerRole.Client -> {}
+            Enums.PlayerRole.Server -> {
                 if (!isLocal) {
                     videoUri = "http://${this.serverIp}:${Constants.NanoHttpd.PORT}/video"
                 }
@@ -84,16 +88,37 @@ object ExoPlayerSingleton {
         return exoPlayer
     }
 
+    /*  fun setSource(uri: String, context: Context, isPlayWhenReady: Boolean = false) {
+          val mediaItem = MediaItem.fromUri(uri)
+          val mediaSource: MediaSource =
+              ProgressiveMediaSource.Factory(
+                  DefaultDataSourceFactory(
+                      context,
+                      "com.creator.eternalbonds"
+                  )
+              ).createMediaSource(mediaItem)
+
+
+          exoPlayer.setMediaSource(mediaSource)
+          exoPlayer.prepare()
+          if (isPlayWhenReady) exoPlayer.playWhenReady = true;
+      }*/
     fun setSource(uri: String, context: Context, isPlayWhenReady: Boolean = false) {
+        // 创建一个MediaItem对象，表示要播放的媒体文件
         val mediaItem = MediaItem.fromUri(uri)
-        val mediaSource: MediaSource =
-            ProgressiveMediaSource.Factory(
-                DefaultDataSourceFactory(
-                    context,
-                    "com.creator.eternalbonds"
-                )
-            ).createMediaSource(mediaItem)
+        // 设置数据源工厂
+        val dataSourceFactory = DefaultDataSourceFactory(
+            context,
+            Util.getUserAgent(context, "com.creator.eternalbonds")
+        )
+        // 创建一个ProgressiveMediaSource，用于播放常规的媒体文件（例如MP4）
+        val mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
+            .createMediaSource(mediaItem)
+        // 设置要播放的媒体项到ExoPlayer
+        exoPlayer.setMediaItem(mediaItem)
+        // 设置媒体源工厂到ExoPlayer
         exoPlayer.setMediaSource(mediaSource)
+        // 准备播放
         exoPlayer.prepare()
         if (isPlayWhenReady) exoPlayer.playWhenReady = true;
     }
@@ -126,6 +151,7 @@ object ExoPlayerSingleton {
                 }
             }
         }
+
         /**
          * 播放器客户端
          */
@@ -139,11 +165,11 @@ object ExoPlayerSingleton {
             override fun onMessage(message: String?) {
                 val videoTransmitBean = VideoTransmitBean.toClass(message)
                 MainThreadExecutor.runOnUiThread {
-                    if (videoUri == null && videoUri!=videoTransmitBean.uri) {
+                    if (videoUri == null && videoUri != videoTransmitBean.uri) {
                         setSource(videoTransmitBean.uri, context, true)
                         videoUri = videoTransmitBean.uri
-                        play()
                     }
+                    LogUtil.d(TAG, videoUri.toString())
                     seekTo(videoTransmitBean.currentPosition)
                 }
             }
