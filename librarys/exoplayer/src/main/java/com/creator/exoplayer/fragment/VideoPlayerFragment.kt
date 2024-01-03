@@ -74,7 +74,7 @@ class VideoPlayerFragment : Fragment() {
                     isLocal=false
                 }
                 binding.playerView.player =
-                    ExoPlayerSingleton.getExoPlayer(requireContext(), Enums.PlayerRole.Server,isLocal=isLocal, serverIp = "192.168.3.3")
+                    ExoPlayerSingleton.getExoPlayer(requireContext(), Enums.PlayerRole.Server,isLocal=isLocal, serverIp = "192.168.2.159")
 
                 ExoPlayerSingleton.setSource(
                     sVideoUri,
