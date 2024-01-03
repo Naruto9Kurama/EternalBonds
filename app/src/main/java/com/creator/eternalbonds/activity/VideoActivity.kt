@@ -26,23 +26,14 @@ class VideoActivity : AppCompatActivity() {
             }
         })
 
-        // 启动 Fragment，并传递枚举值
-        // 从 Intent 中获取枚举值的字符串表示
-        var map = HashMap<String, Any?>()
-        map[VideoPlayerFragment.Companion.ParamKey.VIDEO_ROLE.name] =
-            intent.getStringExtra(VideoPlayerFragment.Companion.ParamKey.VIDEO_ROLE.name)
-        map[VideoPlayerFragment.Companion.ParamKey.VIDEO_URI.name] =
-            intent.getStringExtra(VideoPlayerFragment.Companion.ParamKey.VIDEO_URI.name)
-        map[VideoPlayerFragment.Companion.ParamKey.SERVER_IP.name] =
-            intent.getStringExtra(VideoPlayerFragment.Companion.ParamKey.SERVER_IP.name)
-        val fragment = VideoPlayerFragment.newInstance(map)
+        val fragment = VideoPlayerFragment.newInstance()
 
         // 使用 FragmentManager 启动 Fragment
         supportFragmentManager.beginTransaction()
             .replace(binding.playerView.id, fragment)
             .commit()
 
-        IPUtil.getIpv4Address { ip ->
+        IPUtil.getIpAddress { ip ->
             if (IPUtil.isPublicIPv6(ip)) {
                 runOnUiThread {
                     binding.ipText.text = ip

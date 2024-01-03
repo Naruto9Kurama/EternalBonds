@@ -48,12 +48,12 @@ object ExoPlayerSingleton {
         Log.setLogLevel(Log.LOG_LEVEL_ALL)
         exoPlayer = ExoPlayer.Builder(context).setUseLazyPreparation(false).build();
         if (serverIp != null) {
-            //判断ip是否为ipv6
-            if (IPUtil.isIpv6(serverIp)) {
-                this.serverIp = "[$serverIp]"
-            } else {
-                this.serverIp = serverIp
-            }
+                //判断ip是否为ipv6
+                if (IPUtil.isIpv6(serverIp)) {
+                    this.serverIp = "[$serverIp]"
+                } else {
+                    this.serverIp = serverIp
+                }
         }
         this.websocketUri = "ws://${serverIp}:${Constants.WebSocket.PORT}"
         this.context = context

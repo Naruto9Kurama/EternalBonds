@@ -9,12 +9,13 @@ import java.net.Inet4Address
 import java.net.Inet6Address
 import java.net.InetAddress
 import java.net.NetworkInterface
+import java.util.concurrent.CompletableFuture
 import kotlin.experimental.and
 
 object IPUtil {
 
     private const val TAG = "IPUtil"
-    fun getIpv4Address(block: (ip: String) -> Unit) {
+    fun getIpAddress(block: ((ip: String) -> Unit)?) {
         Constants.IP.REQUEST_URL.forEach { url ->
             OkHttpClientUtil.asyncGet(url, object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
@@ -28,7 +29,9 @@ object IPUtil {
                         /*if (!isPublicIP(string)) {
                             string = ""
                         }*/
-                        block(string)
+                        if (block != null) {
+                            block(string)
+                        }
                     }
                 }
 
@@ -75,16 +78,28 @@ object IPUtil {
     }
 
     fun isIpv6(ipAddress: String): Boolean {
-        when (InetAddress.getByName(ipAddress)) {
-            is Inet4Address -> {
-                return false
+        val future = CompletableFuture<Boolean>()
+        Thread{
+            try {
+                when (InetAddress.getByName(ipAddress)) {
+                    is Inet4Address -> {
+                        future.complete( false)
+                    }
+
+                    is Inet6Address -> {
+                        future.complete( true)
+                    }
+                    else->{
+                        future.complete( false)
+                    }
+                }
+            }catch (e:Exception){
+                future.complete( false)
             }
 
-            is Inet6Address -> {
-                return true
-            }
-        }
-        return false;
+        }.start()
+
+        return future.get();
     }
 
     fun isPublicIPv4(ipAddress: Inet4Address): Boolean {

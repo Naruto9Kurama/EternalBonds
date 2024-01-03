@@ -1,6 +1,7 @@
 package com.creator.common.utils;
 
 import android.annotation.TargetApi;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
@@ -9,6 +10,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.webkit.MimeTypeMap;
 
 import androidx.loader.content.CursorLoader;
 
@@ -18,17 +20,76 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class FileUtil {
-public static String TAG="FileUtil";
-    //复杂版处理  (适配多种API)
+    public static String TAG = "FileUtil";
+
+    /**
+     * 根据路径获取文件的MimeType
+     *
+     * @return
+     * @throws IOException
+     */
+    public static String getMimeType(Context context,String uri) {
+        return getMimeType(context,Uri.parse(uri));
+    }
+
+    public static String getMimeType(Context context, Uri uri) {
+        ContentResolver contentResolver = context.getContentResolver();
+        MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+
+        // 如果文件是通过 ContentProvider 提供的，可以通过 ContentResolver 获取 MIME 类型
+        String mimeType = contentResolver.getType(uri);
+
+        // 如果 ContentResolver 未能获取 MIME 类型，尝试从文件扩展名中猜测
+        if (mimeType == null) {
+            String extension = getExtension(context, uri);
+            mimeType = mimeTypeMap.getMimeTypeFromExtension(extension);
+        }
+        LogUtil.INSTANCE.d(TAG,"mimeType为"+mimeType,null);
+        return mimeType;
+    }
+
+    /**
+     * 通过Uri获取文件扩展名
+     * @param context
+     * @param uri
+     * @return
+     */
+    private static String getExtension(Context context, Uri uri) {
+        ContentResolver contentResolver = context.getContentResolver();
+        MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+
+        // 通过 ContentResolver 获取文件扩展名
+        String extension;
+        if ("content".equals(uri.getScheme())) {
+            extension = mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri));
+        } else {
+            extension = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
+        }
+
+        return extension;
+    }
+    /**
+     * 通过Uri获取文件的真实路径
+     *
+     * @param context
+     * @param uri
+     * @return
+     */
     public static String getRealPathFromUri(Context context, Uri uri) {
         int sdkVersion = Build.VERSION.SDK_INT;
         if (sdkVersion < 11) return getRealPathFromUri_BelowApi11(context, uri);
         if (sdkVersion < 19) return getRealPathFromUri_Api11To18(context, uri);
         else return getRealPathFromUri_AboveApi19(context, uri);
+    }
+    public static String getRealPathFromUri(Context context, String uri) {
+        return getRealPathFromUri(context,Uri.parse(uri));
     }
 
     /**
@@ -170,36 +231,6 @@ public static String TAG="FileUtil";
         return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
 
-
-
-
-
-
-    // 添加新的createVideoFile方法
-    private File createVideoFile(Context context,Uri videoUri) throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String videoFileName = "VIDEO_" + timeStamp + "_";
-        File storageDir = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES);
-
-        File videoFile = File.createTempFile(videoFileName, ".mp4", storageDir);
-
-        // 在这里，你可以使用videoUri进行必要的处理，例如复制文件
-        // 这里简单地将文件复制到临时文件中
-        InputStream inputStream = context.getContentResolver().openInputStream(videoUri);
-        OutputStream outputStream = new FileOutputStream(videoFile);
-
-        byte[] buffer = new byte[1024];
-        int bytesRead;
-        while ((bytesRead = inputStream.read(buffer)) != -1) {
-            outputStream.write(buffer, 0, bytesRead);
-        }
-
-        // 关闭流
-        inputStream.close();
-        outputStream.close();
-
-        return videoFile;
-    }
 
 }
 

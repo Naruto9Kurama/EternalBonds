@@ -3,12 +3,16 @@ package com.creator.eternalbonds.fragment
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RadioButton
 import androidx.appcompat.app.AppCompatActivity
+import com.creator.common.bean.VideoItemBean
+import com.creator.common.bean.VideoPlayerParams
 import com.creator.common.enums.Enums
 import com.creator.common.utils.FileUtil
 import com.creator.common.utils.LogUtil
@@ -32,10 +36,12 @@ class ChooseVideoFragment : Fragment() {
     private lateinit var localFilesRadioButton: RadioButton
     private lateinit var httpRadioButton: RadioButton
     private lateinit var screenCastingRadioButton: RadioButton
-    private var playbackSource: Enums.PlaybackSource = Enums.PlaybackSource.LOCAL_FILES
 
-    private lateinit var localFileUri: URI
+    private lateinit var localFileUri: String
+    private val videoPlayerParams: VideoPlayerParams = VideoPlayerParams.getInstance()
+    private val videoItemBeanList: MutableList<VideoItemBean> = VideoPlayerParams.getInstance().videoItemBeanList
 
+    private val videoItemBean:VideoItemBean= VideoItemBean()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -73,17 +79,21 @@ class ChooseVideoFragment : Fragment() {
         //选择播放源按钮组
         binding.playbackRadioGroup.setOnCheckedChangeListener { group, checkedId ->
             //判断点击了哪个radio按钮
-            when (checkedId) {
+            videoItemBean.playbackSource= when (checkedId) {
                 localFilesRadioButton.id -> {
-                    playbackSource = Enums.PlaybackSource.LOCAL_FILES
+                    Enums.PlaybackSource.LOCAL_FILES
                 }
 
                 httpRadioButton.id -> {
-                    playbackSource = Enums.PlaybackSource.HTTP
+                    Enums.PlaybackSource.HTTP
                 }
 
                 screenCastingRadioButton.id -> {
-                    playbackSource = Enums.PlaybackSource.SCREEN_CASTING
+                    Enums.PlaybackSource.SCREEN_CASTING
+                }
+
+                else -> {
+                    Enums.PlaybackSource.LOCAL_FILES
                 }
             }
         }
@@ -91,35 +101,22 @@ class ChooseVideoFragment : Fragment() {
         binding.startPlayer.setOnClickListener {
             //创建VideoActivity意图对象
             val intent = Intent(activity, VideoActivity::class.java)
-            //添加传输数据
-            //播放器角色
-            intent.putExtra(
-                VideoPlayerFragment.Companion.ParamKey.VIDEO_ROLE.name,
-                Enums.PlayerRole.Server.name
-            )
-            //判断播放源
-            when (playbackSource) {
-                //本地文件
+            videoItemBean.playerRole = Enums.PlayerRole.Server
+            when (videoItemBean.playbackSource) {
                 Enums.PlaybackSource.LOCAL_FILES -> {
-                    intent.putExtra(
-                        VideoPlayerFragment.Companion.ParamKey.VIDEO_URI.name,
-                        localFileUri.toString()
-                    )
+                    videoItemBean.uri=localFileUri
                 }
 
-                //HTTP文件
                 Enums.PlaybackSource.HTTP -> {
-                    LogUtil.d(TAG, binding.httpEditText.text.toString(), null)
-                    intent.putExtra(
-                        VideoPlayerFragment.Companion.ParamKey.VIDEO_URI.name,
-                        binding.httpEditText.text.toString()
-                    )
+                    videoItemBean.uri= binding.httpEditText.text.toString()
                 }
 
-                //投屏
                 Enums.PlaybackSource.SCREEN_CASTING -> {
+
                 }
             }
+            videoItemBeanList.add(videoItemBean)
+            videoPlayerParams.videoItemBeanList=videoItemBeanList
             startActivity(intent)
         }
         //选择文件按钮
@@ -132,14 +129,23 @@ class ChooseVideoFragment : Fragment() {
         //打开客户端播放器按钮
         binding.startClientPlayer.setOnClickListener {
             val intent = Intent(activity, VideoActivity::class.java)
-            intent.putExtra(
-                VideoPlayerFragment.Companion.ParamKey.VIDEO_ROLE.name,
-                Enums.PlayerRole.Client.name
-            )
-            val ipText = binding.ipEditText.text
-            intent.putExtra(VideoPlayerFragment.Companion.ParamKey.SERVER_IP.name, ipText.toString())
+            videoItemBean.ip=binding.ipEditText.text.toString()
             startActivity(intent)
         }
+
+
+        /*//http编辑框文本监听事件
+        binding.httpEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                videoItemBean.uri = s.toString();
+            }
+        })*/
     }
 
 
@@ -151,12 +157,10 @@ class ChooseVideoFragment : Fragment() {
         if (requestCode == Enums.FileRequestCode.VIDEO.ordinal && resultCode == AppCompatActivity.RESULT_OK) {
             // 处理选择的视频文件
             val videoAddress = data?.data
-            localFileUri = URI.create(videoAddress.toString())
-            LogUtil.d(TAG, localFileUri.toString())
+            localFileUri =videoAddress.toString()
             val filePathFromUri =
                 FileUtil.getRealPathFromUri(requireContext(), Uri.parse(videoAddress.toString()))
-            binding.chooseFilePathText.text = filePathFromUri
-            // 这里可以使用 selectedVideoUri 操作选择的视频文件
+            binding.chooseFilePathText.text =filePathFromUri
         }
     }
 
