@@ -159,7 +159,6 @@ class VideoPageFragment : Fragment() {
         if (requestCode == Enums.FileRequestCode.VIDEO.ordinal && resultCode == AppCompatActivity.RESULT_OK) {
             // 处理选择的视频文件
             val videoAddress = data?.data
-
             localFileUri = videoAddress.toString()
             val filePathFromUri =
                 FileUtil.getRealPathFromUri(requireContext(), Uri.parse(videoAddress.toString()))
