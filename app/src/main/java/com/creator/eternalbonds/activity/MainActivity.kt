@@ -3,20 +3,18 @@ package com.creator.eternalbonds.activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.creator.common.enums.Enums
-import com.creator.common.utils.LogUtil
+import com.creator.common.bean.VideoPlayerParams
+import com.creator.common.utils.IPUtil
 import com.creator.eternalbonds.databinding.ActivityMainBinding
-import com.creator.eternalbonds.fragment.ChooseVideoFragment
-import com.creator.exoplayer.fragment.VideoPlayerFragment
 import java.net.URI
 
 
 class MainActivity : AppCompatActivity() {
 
-    private val TAG="MainActivity"
+    private val TAG = "MainActivity"
     private lateinit var binding: ActivityMainBinding
 
-    private lateinit var videoAddress:String
+    private lateinit var videoAddress: String
     private lateinit var uri: URI
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,17 +22,26 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val fragment = ChooseVideoFragment.newInstance("","")
+        binding.fuwuduan.setOnClickListener {
+            startActivity(Intent(this, VideoActivity::class.java))
+        }
+        binding.kehuduan.setOnClickListener {
 
-        // 使用 FragmentManager 启动 Fragment
-        supportFragmentManager.beginTransaction()
-            .replace(binding.fragment.id, fragment)
-            .commit()
+            val intent = Intent(this, VideoActivity::class.java)
+//            intent.putExtra("ip",binding.ipEdit.text.toString())
+            VideoPlayerParams.getInstance().serverIp = binding.ipEdit.text.toString()
+            startActivity(intent)
+        }
 
-
+        IPUtil.getIpAddress { ip ->
+            if (IPUtil.isIpv6(ip)) {
+                runOnUiThread {
+                    VideoPlayerParams.getInstance().myIp = ip.toString()
+                    binding.ipText.text = ip.toString()
+                }
+            }
+        }
     }
-
-
 
 
     /**

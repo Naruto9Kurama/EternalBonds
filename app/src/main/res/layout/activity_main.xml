@@ -5,42 +5,38 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activity.MainActivity">
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintVertical_bias="0.0"
-        app:layout_constraintHorizontal_bias="0.0"
-        />
 
-   <!-- <Button
-        android:id="@+id/faqi"
+    <Button
+        android:id="@+id/fuwuduan"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="faqi"/>
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:text="服务端"/>
+    <TextView
+        android:id="@+id/ipText"
+        android:layout_width="wrap_content"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/kehuduan"
+        app:layout_constraintTop_toTopOf="@+id/fuwuduan"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_height="wrap_content"/>
     <Button
-        android:id="@+id/rec"
+        android:id="@+id/kehuduan"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintRight_toRightOf="parent"
-        android:text="客户端"/>
-
-    <Button
-        android:id="@+id/chooseFile"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:text="选择文件"/>
-
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:text="客户端"/>
     <EditText
         android:id="@+id/ipEdit"
+        android:layout_width="wrap_content"
         app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginRight="150dp"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"/>-->
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/kehuduan"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_height="wrap_content"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

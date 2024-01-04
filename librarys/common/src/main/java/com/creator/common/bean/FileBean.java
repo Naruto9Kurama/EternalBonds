@@ -23,7 +23,9 @@ public class FileBean {
         mimeType = FileUtil.getMimeType(context, contentUriStr);
     }
 
-    public FileBean(){}
+    public FileBean() {
+    }
+
     public FileBean(Context context, Uri contentUri) {
         this(context, contentUri.toString());
     }
@@ -34,7 +36,7 @@ public class FileBean {
     private Uri contentUri;//文件的真实URI
     private String fileName;//文件名
     private String mimeType;//文件的mimeType
-    private Long fileSize;//文件大小
+//    private Long fileSize;//文件大小
     private File file;//文件类
 
     private String httpUri;//http文件地址
@@ -80,11 +82,7 @@ public class FileBean {
     }
 
     public Long getFileSize() {
-        return fileSize;
-    }
-
-    public void setFileSize(Long fileSize) {
-        this.fileSize = fileSize;
+        return getFile().length();
     }
 
     public File getFile() {
@@ -93,7 +91,6 @@ public class FileBean {
         }
         return file;
     }
-
 
 
 }

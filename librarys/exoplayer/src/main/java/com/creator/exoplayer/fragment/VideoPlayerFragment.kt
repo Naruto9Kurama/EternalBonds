@@ -1,18 +1,18 @@
 package com.creator.exoplayer.fragment
 
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.creator.common.MainThreadExecutor
 import com.creator.common.bean.VideoPlayerParams
 import com.creator.common.enums.Enums
 import com.creator.common.utils.URIUtils
 import com.creator.exoplayer.databinding.FragmentVideoPlayerBinding
 import com.creator.exoplayer.player.ExoPlayerSingleton
 import com.creator.nanohttpd.server.VideoNanoHttpDServer
-
+import com.google.android.exoplayer2.Player.Listener
 
 
 class VideoPlayerFragment : Fragment() {
@@ -21,7 +21,7 @@ class VideoPlayerFragment : Fragment() {
     private var _binding: FragmentVideoPlayerBinding? = null
     private val binding get() = _binding!!
 
-    private val videoPlayerParams:VideoPlayerParams=VideoPlayerParams.getInstance()
+    private val videoPlayerParams: VideoPlayerParams = VideoPlayerParams.getInstance()
 
     //    private lateinit var uri: String
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,9 +35,9 @@ class VideoPlayerFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentVideoPlayerBinding.inflate(inflater, container, false)
-        val sVideoUri=videoPlayerParams.videoItemBeanList[0].uri
+//        val sVideoUri=videoPlayerParams.videoItemBeanList[0].uri
         //通过播放器角色，创建播放
-        when (videoPlayerParams.videoItemBeanList[0].playerRole) {
+        /*when (videoPlayerParams.videoItemBeanList[0].playerRole) {
             Enums.PlayerRole.Server -> {
                 var isLocal = true
                 if (!URIUtils.isHttpUri(sVideoUri)) {
@@ -70,8 +70,32 @@ class VideoPlayerFragment : Fragment() {
                 )
             }
 
-        }
+        }*/
         return binding.root
+    }
+
+
+    fun getCurrentPosition(): Long {
+        return ExoPlayerSingleton.getCurrentPosition()
+    }
+
+    fun startPlay(uri: String, block: (()->Unit)? =null) {
+        MainThreadExecutor.runOnUiThread {
+            if (binding.playerView.player == null) {
+                binding.playerView.player = ExoPlayerSingleton.getExoPlayer(requireContext())
+            }
+            ExoPlayerSingleton.setSource(uri, requireContext(), true)
+            ExoPlayerSingleton.play()
+            block?.invoke()
+        }
+    }
+
+    fun addListener(listener: Listener) {
+        ExoPlayerSingleton.addListener(listener)
+    }
+
+    fun seekTo(l: Long) {
+        ExoPlayerSingleton.seekTo(l)
     }
 
     companion object {

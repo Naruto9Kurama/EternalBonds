@@ -1,10 +1,10 @@
 package com.creator.exoplayer.player
 
-import MainThreadExecutor
 import android.annotation.SuppressLint
 import android.content.Context
 import android.widget.Toast
 import com.creator.common.Constants
+import com.creator.common.MainThreadExecutor
 import com.creator.common.bean.VideoTransmitBean
 import com.creator.common.enums.Enums
 import com.creator.common.utils.IPUtil
@@ -12,6 +12,7 @@ import com.creator.common.utils.LogUtil
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.Player.Listener
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
@@ -30,62 +31,17 @@ import java.net.URI
 object ExoPlayerSingleton {
     private const val TAG = "ExoPlayerSingleton"
     private lateinit var exoPlayer: ExoPlayer
-    private lateinit var playerRole: Enums.PlayerRole
-    private var videoUri: String? = null
-
-    //    private var videoUri = MutableLiveData<String>()
-    private lateinit var websocketUri: String
-    private lateinit var serverIp: String
-    private lateinit var context: Context
-    private var isSeekTo: Boolean = false
-    private var isLocal: Boolean = true
-    fun getExoPlayer(
-        context: Context,
-        playerRole: Enums.PlayerRole,
-        serverIp: String? = null,
-        isLocal: Boolean = true
-    ): ExoPlayer {
+    fun getExoPlayer(context: Context, ): ExoPlayer {
         Log.setLogLevel(Log.LOG_LEVEL_ALL)
-        exoPlayer = ExoPlayer.Builder(context).setUseLazyPreparation(false).build();
-        if (serverIp != null) {
-                //判断ip是否为ipv6
-                if (IPUtil.isIpv6(serverIp)) {
-                    this.serverIp = "[$serverIp]"
-                } else {
-                    this.serverIp = serverIp
-                }
-        }
-        this.websocketUri = "ws://${serverIp}:${Constants.WebSocket.PORT}"
-        this.context = context
-        this.playerRole = playerRole
-        this.isLocal = isLocal
-        when (playerRole) {
-            Enums.PlayerRole.Client -> {}
-            Enums.PlayerRole.Server -> {
-                if (!isLocal) {
-                    videoUri = "http://${this.serverIp}:${Constants.NanoHttpd.PORT}/video"
-                }
-            }
-        }
-
-        exoPlayer.addListener(object : Player.Listener {
-            override fun onPositionDiscontinuity(reason: Int) {
-                super.onPositionDiscontinuity(reason)
-                if (!isSeekTo) {
-                    val currentPosition = exoPlayer.currentPosition
-                    val videoTransmitBean = VideoTransmitBean()
-                    videoTransmitBean.currentPosition = currentPosition
-                    videoTransmitBean.uri = videoUri
-                    LogUtil.d(TAG, "当前时间:::$currentPosition")
-                    //发送当前变更位置
-                    MyWebSocket.send(videoTransmitBean)
-                }
-                isSeekTo = false
-            }
-        })
-
-        MyWebSocket
+        exoPlayer = ExoPlayer.Builder(context).build();
         return exoPlayer
+    }
+
+    fun getCurrentPosition(): Long {
+        return exoPlayer.currentPosition
+    }
+    fun addListener(listener: Listener){
+        exoPlayer.addListener(listener);
     }
 
     /*  fun setSource(uri: String, context: Context, isPlayWhenReady: Boolean = false) {
@@ -129,14 +85,13 @@ object ExoPlayerSingleton {
 
     fun seekTo(l: Long) {
         LogUtil.d(TAG, "播放" + l.toString())
-        isSeekTo = true
         MainThreadExecutor.runOnUiThread {
             exoPlayer.seekTo(l)
         }
     }
 
 
-    object MyWebSocket {
+    /*object MyWebSocket {
         private lateinit var websocket: WebSocket
 
         init {
@@ -152,9 +107,9 @@ object ExoPlayerSingleton {
             }
         }
 
-        /**
+        *//**
          * 播放器客户端
-         */
+         *//*
         class ExoPlayerWebSocketClient constructor(uri: String = websocketUri) :
             org.java_websocket.client.WebSocketClient(URI(uri)) {
             override fun onOpen(handshakedata: ServerHandshake?) {
@@ -184,9 +139,9 @@ object ExoPlayerSingleton {
         }
 
 
-        /**
+        *//**
          * 播放器服务端
-         */
+         *//*
         class ExoPlayerWebSocketServer constructor(port: Int = Constants.WebSocket.PORT) :
             WebSocketServer(InetSocketAddress(port)) {
             override fun onOpen(conn: WebSocket, handshake: ClientHandshake?) {
@@ -237,6 +192,6 @@ object ExoPlayerSingleton {
         }
 
 
-    }
+    }*/
 
 }

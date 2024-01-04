@@ -1,8 +1,7 @@
 package com.creator.websocket.server;
 
-import android.util.Log;
-
 import com.creator.common.Constants;
+import com.creator.common.utils.LogUtil;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
@@ -44,28 +43,28 @@ public class MyWebSocketServer extends org.java_websocket.server.WebSocketServer
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
-        Log.d(TAG,"onOpen");
+        LogUtil.INSTANCE.d(TAG,"onOpen",null);
     }
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-        Log.d(TAG,"onClose");
+        LogUtil.INSTANCE.d(TAG,"onClose",null);
     }
 
     @Override
     public void onMessage(WebSocket conn, String message) {
-        Log.d(TAG,"onMessage:::"+message);
+        LogUtil.INSTANCE.d(TAG,"onMessage:::"+message,null);
     }
 
     @Override
     public void onError(WebSocket conn, Exception ex) {
-        Log.e(TAG,"onError:::"+ex.getMessage(),ex);
+        LogUtil.INSTANCE.e(TAG,"onError:::"+ex.getMessage(),ex);
 
     }
 
     @Override
     public void onStart() {
-        Log.d(TAG,"onStart");
+        LogUtil.INSTANCE.d(TAG,"onStart",null);
 
     }
 }
