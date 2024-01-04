@@ -1,16 +1,12 @@
 package com.creator.common.bean;
 
-import android.net.Uri;
-
 import com.creator.common.Constants;
 import com.creator.common.enums.Enums;
 
 public class VideoItemBean {
-    //    private Enums.PlayerRole playerRole; //播放器角色
     private Enums.PlaybackSource playbackSource; //播放源
     private String uri;//视频的uri
     private String ip;//视频归属哪个ip地址
-//    private String myIp; //我的ip地址
 
     private Long currentPosition;//视频播放位置
     private String localUri;//如果播放器角色是服务端，且播放源为本地文件，localUri存储为本地文件的路径

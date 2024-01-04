@@ -83,6 +83,9 @@ public class FileUtil {
      * @return
      */
     public static String getRealPathFromUri(Context context, Uri uri) {
+        if (URIUtils.isHttpUri(uri)){
+            return uri.toString();
+        }
         int sdkVersion = Build.VERSION.SDK_INT;
         if (sdkVersion < 11) return getRealPathFromUri_BelowApi11(context, uri);
         if (sdkVersion < 19) return getRealPathFromUri_Api11To18(context, uri);

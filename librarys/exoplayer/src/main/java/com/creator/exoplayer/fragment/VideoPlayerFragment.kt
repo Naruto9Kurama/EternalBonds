@@ -20,10 +20,8 @@ class VideoPlayerFragment : Fragment() {
 
     private var _binding: FragmentVideoPlayerBinding? = null
     private val binding get() = _binding!!
-
     private val videoPlayerParams: VideoPlayerParams = VideoPlayerParams.getInstance()
 
-    //    private lateinit var uri: String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -35,42 +33,7 @@ class VideoPlayerFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentVideoPlayerBinding.inflate(inflater, container, false)
-//        val sVideoUri=videoPlayerParams.videoItemBeanList[0].uri
         //通过播放器角色，创建播放
-        /*when (videoPlayerParams.videoItemBeanList[0].playerRole) {
-            Enums.PlayerRole.Server -> {
-                var isLocal = true
-                if (!URIUtils.isHttpUri(sVideoUri)) {
-                    val videoNanoHttpDServer =
-                        VideoNanoHttpDServer(uri = sVideoUri, context = context)
-                    videoNanoHttpDServer.start()
-                    isLocal = false
-                }
-                binding.playerView.player =
-                    ExoPlayerSingleton.getExoPlayer(
-                        requireContext(),
-                        Enums.PlayerRole.Server,
-                        isLocal = isLocal,
-                        serverIp = videoPlayerParams.myIp
-                    )
-
-                ExoPlayerSingleton.setSource(
-                    sVideoUri,
-                    requireContext()
-                )
-                ExoPlayerSingleton.play()
-            }
-
-            Enums.PlayerRole.Client -> {
-                binding.playerView.player = ExoPlayerSingleton.getExoPlayer(
-                    requireContext(),
-                    Enums.PlayerRole.Client,
-                    videoPlayerParams.videoItemBeanList[0].ip,
-                    isLocal = false
-                )
-            }
-
-        }*/
         return binding.root
     }
 
@@ -92,6 +55,9 @@ class VideoPlayerFragment : Fragment() {
 
     fun addListener(listener: Listener) {
         ExoPlayerSingleton.addListener(listener)
+    }
+    fun removeListener(listener: Listener) {
+        ExoPlayerSingleton.removeListener(listener)
     }
 
     fun seekTo(l: Long) {

@@ -12,7 +12,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.creator.common.Constants
 import com.creator.common.bean.VideoItemBean
 import com.creator.common.bean.VideoPlayerParams
-import com.creator.common.bean.VideoTransmitBean
 import com.creator.common.enums.Enums
 import com.creator.common.utils.FileUtil
 import com.creator.common.utils.LogUtil
@@ -27,12 +26,6 @@ import org.java_websocket.server.WebSocketServer
 import java.net.InetSocketAddress
 import java.net.URI
 
-
-/**
- * A simple [Fragment] subclass.
- * Use the [VideoPageFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class VideoPageFragment : Fragment() {
 
     private val TAG = "VideoPageFragment"
@@ -44,6 +37,7 @@ class VideoPageFragment : Fragment() {
     private lateinit var myWebSocket: MyWebSocket
     private var videoPlayerParams: VideoPlayerParams = VideoPlayerParams.getInstance()
     lateinit var player: VideoPlayerFragment
+     var videoNanoHttpDServer: VideoNanoHttpDServer?=null
 
     private var isSeekTo = false
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -120,40 +114,49 @@ class VideoPageFragment : Fragment() {
 
     }
 
-    fun addPlayerListener() {
-        //视频进度条变化监听
-        player.addListener(object : Player.Listener {
-            override fun onPositionDiscontinuity(reason: Int) {
-                super.onPositionDiscontinuity(reason)
-                LogUtil.d(TAG, "进度条变化")
-                if (!isSeekTo) {
-                    val currentPosition = player.getCurrentPosition()
-                    val videoTransmitBean = VideoTransmitBean()
-                    videoPlayerParams.currentVideoItemBean.currentPosition = currentPosition
-                    videoTransmitBean.uri = videoPlayerParams.currentVideoUri
-                    LogUtil.d(TAG, "当前时间:::$currentPosition")
-                    //发送当前变更位置
-                    myWebSocket.send(videoPlayerParams)
-                }
-                isSeekTo = false
-            }
-        })
+    fun removePlayerListener(){
+        player.removeListener(listener)
     }
-
+    fun addPlayerListener() {
+        player.addListener(listener)
+    }
+    //视频进度条变化监听
+    val listener = object : Player.Listener {
+        override fun onPositionDiscontinuity(reason: Int) {
+            super.onPositionDiscontinuity(reason)
+            LogUtil.d(TAG, "进度条变化")
+            if (!isSeekTo) {
+                val currentPosition = player.getCurrentPosition()
+                videoPlayerParams.currentVideoItemBean.currentPosition = currentPosition
+                LogUtil.d(TAG, "当前时间:::$currentPosition")
+                //发送当前变更位置
+                myWebSocket.send(videoPlayerParams)
+            }
+            isSeekTo = false
+        }
+    }
     fun seekTo(l: Long) {
         isSeekTo = true
         player.seekTo(l)
     }
 
     fun startNano() {
-        val videoNanoHttpDServer =
-            VideoNanoHttpDServer(
+
+        if (videoNanoHttpDServer==null){
+            videoNanoHttpDServer = VideoNanoHttpDServer(
                 uri = videoPlayerParams.currentVideoUri,
                 context = context
             )
-        videoNanoHttpDServer.start()
+            videoNanoHttpDServer?.start()
+        }
     }
 
+    fun startPlay(){
+        player.startPlay(videoPlayerParams.currentVideoUri)
+        if (videoPlayerParams.currentVideoItemBean.currentPosition != null) {
+            player.seekTo(videoPlayerParams.currentVideoItemBean.currentPosition)
+        }
+    }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == Enums.FileRequestCode.VIDEO.ordinal && resultCode == AppCompatActivity.RESULT_OK) {
@@ -210,11 +213,7 @@ class VideoPageFragment : Fragment() {
             override fun onOpen(conn: WebSocket, handshake: ClientHandshake?) {
                 websockets.add(conn)
 
-//                val videoTransmitBean = VideoTransmitBean()
-//                videoTransmitBean.uri = videoPlayerParams.currentVideoUri
-//                videoTransmitBean.currentPosition = player.getCurrentPosition()
                 send(VideoPlayerParams.getInstance())
-
             }
 
             override fun onClose(conn: WebSocket?, code: Int, reason: String?, remote: Boolean) {
@@ -243,10 +242,7 @@ class VideoPageFragment : Fragment() {
             val videoPlayerParams = VideoPlayerParams.getInstance().toClass(message)
             LogUtil.d(TAG, videoPlayerParams.toString())
             if (videoPlayerParams != null) {
-                player.startPlay(videoPlayerParams.currentVideoUri)
-                if (videoPlayerParams.currentVideoItemBean.currentPosition != null) {
-                    player.seekTo(videoPlayerParams.currentVideoItemBean.currentPosition)
-                }
+                startPlay()
             }
         }
 
@@ -261,31 +257,10 @@ class VideoPageFragment : Fragment() {
             }
 
         }
-        /*fun send(videoTransmitBean: VideoTransmitBean) {
-
-            websockets.forEach { websocket ->
-                try {
-                    websocket.send(videoTransmitBean.toString())
-                } catch (e: Exception) {
-                    LogUtil.e(TAG, "send失败：${videoTransmitBean.toString()}\n" + e.message, e)
-                }
-            }
-
-        }*/
-
-
     }
 
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment VideoPageFragment.
-         */
         @JvmStatic
         fun newInstance() =
             VideoPageFragment().apply {
