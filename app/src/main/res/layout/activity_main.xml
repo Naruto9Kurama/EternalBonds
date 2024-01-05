@@ -4,39 +4,63 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".activity.MainActivity">
 
-    <Button
-        android:id="@+id/fuwuduan"
+    <com.google.android.material.button.MaterialButton
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/openServeBtn"
+        android:text="服务端"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:cornerRadius="10dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        android:text="服务端"/>
-    <TextView
-        android:id="@+id/ipText"
-        android:layout_width="wrap_content"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toBottomOf="@+id/kehuduan"
-        app:layout_constraintTop_toTopOf="@+id/fuwuduan"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_height="wrap_content"/>
-    <Button
-        android:id="@+id/kehuduan"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_height="wrap_content"/>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:layout_width="wrap_content"
+        android:id="@+id/ipText"
+        app:layout_constraintTop_toTopOf="@+id/openServeBtn"
+        app:layout_constraintBottom_toBottomOf="@+id/openServeBtn"
+        app:layout_constraintLeft_toRightOf="@+id/openServeBtn"
+        android:text="你的ip地址"
+        android:layout_height="wrap_content"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:layout_width="wrap_content"
+        android:id="@+id/openClientBtn"
+        android:text="客户端"
+        app:cornerRadius="10dp"
+        app:layout_constraintTop_toTopOf="@+id/openServeBtn"
         app:layout_constraintLeft_toLeftOf="parent"
-        android:text="客户端"/>
-    <EditText
+        android:layout_marginTop="100dp"
+        android:layout_height="wrap_content"/>
+    <com.google.android.material.textfield.TextInputEditText
         android:id="@+id/ipEdit"
         android:layout_width="wrap_content"
-        app:layout_constraintRight_toRightOf="parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="@+id/openClientBtn"
+        app:layout_constraintBottom_toBottomOf="@+id/openClientBtn"
+        app:layout_constraintLeft_toRightOf="@+id/openClientBtn"
+        android:hint="请输入服务端ip"
+        />
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/lightgray"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/kehuduan"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_height="wrap_content"/>
+        app:cardCornerRadius="20dp"
+        >
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNavigationView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/ivory"
+            android:layout_gravity="bottom"
+            app:itemTextColor="@color/black"
+            app:menu="@menu/bottom_nav_menu"/>
+    </androidx.cardview.widget.CardView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

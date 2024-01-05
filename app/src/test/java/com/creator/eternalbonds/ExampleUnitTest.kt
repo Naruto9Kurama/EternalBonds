@@ -1,12 +1,10 @@
 package com.creator.eternalbonds
 
-import com.creator.common.Constants
-import org.java_websocket.client.WebSocketClient
-import org.java_websocket.handshake.ServerHandshake
-import org.junit.Test
-
+import com.creator.common.utils.LogUtil
 import org.junit.Assert.*
-import java.net.URI
+import org.junit.Test
+import java.net.InetAddress
+
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -16,33 +14,11 @@ import java.net.URI
 class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
-        try {
-            val webSocketClient =
-                object : WebSocketClient(URI("ws://120.32.251.49:${Constants.WebSocket.PORT}")){
-                    override fun onOpen(handshakedata: ServerHandshake?) {
-                        println("onOpen")
-                    }
-
-                    override fun onMessage(message: String?) {
-                        println("onMessage")
-                    }
-
-                    override fun onClose(code: Int, reason: String?, remote: Boolean) {
-                        println("onClose")
-                    }
-
-                    override fun onError(ex: java.lang.Exception?) {
-                        println("onError")
-                    }
-
-                }
-            while (true){
-
-            }
-
-        } catch (e: Exception) {
-
-        }
+// 获取 InetAddress 对象
+        // 获取 InetAddress 对象
+        val inetAddress = InetAddress.getByName("240e:379:20a4:3c10:a054:b2d0:6d3e:bf9a")
+        val reachable = inetAddress.isReachable(2000)
+        LogUtil.d("ExampleUnitTest",reachable.toString())
 
     }
 }

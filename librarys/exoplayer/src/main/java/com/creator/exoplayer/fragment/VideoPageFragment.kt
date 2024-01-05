@@ -1,14 +1,17 @@
 package com.creator.exoplayer.fragment
 
+import android.R
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.RadioButton
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.Fragment
 import com.creator.common.Constants
 import com.creator.common.bean.VideoItemBean
 import com.creator.common.bean.VideoPlayerParams
@@ -71,6 +74,11 @@ class VideoPageFragment : Fragment() {
         httpRadioButton = binding.httpRadioButton
         //投屏RadioButton
         screenCastingRadioButton = binding.screenCastingRadioButton
+        if (videoPlayerParams.serverIp!=null){
+            binding.ipText.text=videoPlayerParams.serverIp
+        }else{
+            binding.ipText.text=videoPlayerParams.myIp
+        }
         addListener()
     }
 
@@ -110,6 +118,15 @@ class VideoPageFragment : Fragment() {
             val intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.type = "video/*"
             startActivityForResult(intent, Enums.FileRequestCode.VIDEO.ordinal)
+        }
+
+        binding.btnOpenDrawer.setOnClickListener {
+            val drawerLayout = binding.drawerLayout
+            if(drawerLayout.isDrawerOpen(GravityCompat.START)){
+                drawerLayout.closeDrawer(GravityCompat.START)
+            }else{
+                drawerLayout.openDrawer(GravityCompat.START)
+            }
         }
 
     }
@@ -259,7 +276,10 @@ class VideoPageFragment : Fragment() {
         }
     }
 
-
+    public fun openDrawer(view: View?) {
+        val drawerLayout = binding.drawerLayout
+        drawerLayout.openDrawer(GravityCompat.START)
+    }
     companion object {
         @JvmStatic
         fun newInstance() =

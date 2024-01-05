@@ -1,8 +1,12 @@
 package com.creator.eternalbonds.activity
 
+import android.R
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import com.creator.common.bean.VideoPlayerParams
 import com.creator.common.utils.IPUtil
 import com.creator.eternalbonds.databinding.ActivityMainBinding
@@ -22,10 +26,10 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.fuwuduan.setOnClickListener {
+        binding.openServeBtn.setOnClickListener {
             startActivity(Intent(this, VideoActivity::class.java))
         }
-        binding.kehuduan.setOnClickListener {
+        binding.openClientBtn.setOnClickListener {
 
             val intent = Intent(this, VideoActivity::class.java)
 //            intent.putExtra("ip",binding.ipEdit.text.toString())
@@ -37,10 +41,12 @@ class MainActivity : AppCompatActivity() {
             if (IPUtil.isIpv6(ip)) {
                 runOnUiThread {
                     VideoPlayerParams.getInstance().myIp = ip.toString()
-                    binding.ipText.text = ip.toString()
+                    binding.ipText.text = "你的ip地址为："+ip.toString()
                 }
             }
         }
+
+
     }
 
 
