@@ -2,11 +2,6 @@ package com.creator.common.bean;
 
 import android.content.Context;
 import android.net.Uri;
-import android.os.Parcel;
-import android.os.Parcelable;
-
-import androidx.annotation.NonNull;
-
 import com.creator.common.utils.FileUtil;
 
 import java.io.File;
@@ -36,7 +31,7 @@ public class FileBean {
     private Uri contentUri;//文件的真实URI
     private String fileName;//文件名
     private String mimeType;//文件的mimeType
-//    private Long fileSize;//文件大小
+    //    private Long fileSize;//文件大小
     private File file;//文件类
 
     private String httpUri;//http文件地址
@@ -66,7 +61,7 @@ public class FileBean {
     }
 
     public String getFileName() {
-        return fileName;
+        return getFile().getName();
     }
 
     public void setFileName(String fileName) {

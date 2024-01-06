@@ -49,7 +49,7 @@ allprojects {
         androidTestImplementation("androidx.test.ext:junit:1.1.5")
         androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
         implementation("com.google.code.gson:gson:2.10.1")
-        implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
+        api ("com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
         if (project.name!="common"){
             implementation(project(":librarys:common"))
         }

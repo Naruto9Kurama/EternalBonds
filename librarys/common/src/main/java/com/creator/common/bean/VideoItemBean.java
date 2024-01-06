@@ -11,7 +11,6 @@ public class VideoItemBean {
     private Long currentPosition;//视频播放位置
     private String localUri;//如果播放器角色是服务端，且播放源为本地文件，localUri存储为本地文件的路径
 
-
     public Long getCurrentPosition() {
         return currentPosition;
     }

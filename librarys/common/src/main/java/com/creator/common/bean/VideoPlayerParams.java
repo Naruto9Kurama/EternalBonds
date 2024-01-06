@@ -6,9 +6,9 @@ import com.creator.common.utils.IPUtil;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.Set;
 
 public class VideoPlayerParams {
     private VideoPlayerParams() {
@@ -23,8 +23,9 @@ public class VideoPlayerParams {
         return videoPlayerParams;
     }
 
-    private String myIp; //我的ip地址
+    private Set<String> myIps = new HashSet<>(); //我的ip地址
     private String serverIp;//房间服务器ip
+    private Enums.PlayerRole playerRole;
     private List<String> ip = new ArrayList<>(); //ip地址
 
 
@@ -34,11 +35,23 @@ public class VideoPlayerParams {
         return serverIp;
     }
 
-    public void setServerIp(String serverIp) {
+    public boolean setServerIp(String serverIp) {
+        if (!IPUtil.INSTANCE.ipIsReachable(serverIp)) {//判断是否是有效ip
+            return false;
+        }
         if (IPUtil.INSTANCE.isIpv6(serverIp)) {
             serverIp = "[" + serverIp + "]";
         }
         this.serverIp = serverIp;
+        return true;
+    }
+
+    public Enums.PlayerRole getPlayerRole() {
+        return playerRole;
+    }
+
+    public void setPlayerRole(Enums.PlayerRole playerRole) {
+        this.playerRole = playerRole;
     }
 
     public String getWebSocketServerIp() {
@@ -49,31 +62,29 @@ public class VideoPlayerParams {
         this.ip = ip;
     }
 
-    public String getMyIp() {
-
-        if (myIp == null) {
-            CompletableFuture<String> future = new CompletableFuture<>();
-            IPUtil.INSTANCE.getIpAddress(ip -> {
-                myIp = ip.trim().replaceAll("\\n$", "");
-                future.complete(ip);
-                return null;
-            });
-            try {
-                future.get();
-            } catch (ExecutionException e) {
-                throw new RuntimeException(e);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return myIp;
+    public void setMyIps(Set<String> myIps) {
+        this.myIps = myIps;
     }
 
-    public void setMyIp(String myIp) {
-        if (IPUtil.INSTANCE.isIpv6(myIp)) {
-            myIp = "[" + myIp + "]";
+    public String getMyIp() {
+        for (String ip : myIps) {
+            if (IPUtil.INSTANCE.isPublicIPv6(ip)) {
+                return ip;
+            }
         }
-        this.myIp = myIp;
+        return myIps.toArray()[0].toString();
+    }
+
+    public Set<String> getMyIps() {
+        return myIps;
+    }
+
+    public void addMyIp(String myIp) {
+        myIp = myIp.trim().replaceAll("\\n$", "");
+        /*if (IPUtil.INSTANCE.isIpv6(myIp)) {
+            myIp = "[" + myIp + "]";
+        }*/
+        this.myIps.add(myIp);
     }
 
     public List<String> getIp() {
@@ -86,9 +97,10 @@ public class VideoPlayerParams {
     }
 
     public String getCurrentVideoUri() {
-        return videoItemBeanList.get(0).getUri();
+        return videoItemBeanList.get(videoItemBeanList.size() - 1).getUri();
     }
-    public VideoItemBean getCurrentVideoItemBean(){
+
+    public VideoItemBean getCurrentVideoItemBean() {
         return videoItemBeanList.get(0);
     }
 
@@ -98,8 +110,8 @@ public class VideoPlayerParams {
 
     public VideoPlayerParams toClass(String str) {
         VideoPlayerParams videoPlayerParams = new Gson().fromJson(str, VideoPlayerParams.class);
-        videoPlayerParams.myIp= VideoPlayerParams.getInstance().myIp;
-        this.videoPlayerParams=videoPlayerParams;
+        videoPlayerParams.myIps = VideoPlayerParams.getInstance().myIps;
+        this.videoPlayerParams = videoPlayerParams;
         return this.videoPlayerParams;
     }
 

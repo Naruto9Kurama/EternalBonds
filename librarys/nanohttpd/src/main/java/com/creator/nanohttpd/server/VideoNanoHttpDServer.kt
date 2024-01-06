@@ -20,7 +20,7 @@ class VideoNanoHttpDServer(
     port: Int = Constants.NanoHttpd.PORT,
     var videoUri: Uri? = null,
     val context: Context? = null
-) : NanoHTTPD(port) {
+) : NanoHTTPD("::"/*监听ipv6和ipv4全部地址*/,port) {
     constructor(port: Int = Constants.NanoHttpd.PORT, uri: String, context: Context? = null) : this(
         port,
         Uri.parse(uri),
@@ -41,6 +41,11 @@ class VideoNanoHttpDServer(
 
     private var fileBean: FileBean = FileBean(context, videoUri)
 
+
+    fun setVideoUri( uri: String){
+        videoUri=Uri.parse(uri)
+        fileBean= FileBean(context,videoUri)
+    }
 
     override fun serve(session: IHTTPSession): Response {
         val uri = session.uri

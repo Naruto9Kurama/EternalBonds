@@ -1,6 +1,8 @@
 package com.creator.common.utils
 
 import com.creator.common.Constants
+import com.creator.common.bean.PingResult
+import com.creator.common.enums.Enums
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
@@ -9,35 +11,42 @@ import java.net.Inet4Address
 import java.net.Inet6Address
 import java.net.InetAddress
 import java.net.NetworkInterface
+import java.net.SocketException
 import java.util.concurrent.CompletableFuture
 import kotlin.experimental.and
 
 object IPUtil {
 
     private const val TAG = "IPUtil"
-    fun getIpAddress(block: ((ip: String) -> Unit)?) {
-        Constants.IP.REQUEST_URL.forEach { url ->
+    fun getIpAddress(
+        block: ((ip: String,ips:Set<String>) -> Unit)? = null,
+    ) {
+        var ips = HashSet<String>()
+        Constants.IP.REQUEST_URL.forEachIndexed() { index, url ->
+            LogUtil.d(TAG,"准备请求ip")
             OkHttpClientUtil.asyncGet(url, object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    kotlin.run {
-                        var string = response.body.string()
-                        LogUtil.d(TAG, string)
+                    var ip = response.body.string().trim().replace("\\n$".toRegex(), "")
+                    try {
+                        LogUtil.d(TAG, ip)
 
-                        /*if (!isPublicIP(string)) {
-                            string = ""
-                        }*/
-                        if (block != null) {
-                            block(string)
+                        if (isLocalIpAddress(ip)&&velocity(ip)) {//ip是否是本机ip且可ping通
+                            ips.add(ip)
+                            block?.invoke(ip,ips)
                         }
-                    }
-                }
+                    } catch (e: Exception) {
 
+                    } finally {
+
+                    }
+
+
+                }
             })
         }
-
     }
 
     fun getPublicIpAddress() {
@@ -60,10 +69,96 @@ object IPUtil {
         }
     }
 
+
+    /**
+     * 判断获取到的ip是否是本机ip
+     */
+    fun isLocalIpAddress(ipAddress: String): Boolean {
+        try {
+            // 获取所有网络接口
+            val networkInterfaces = NetworkInterface.getNetworkInterfaces()
+            while (networkInterfaces.hasMoreElements()) {
+                val networkInterface = networkInterfaces.nextElement()
+                // 获取每个网络接口的所有 IP 地址
+                val inetAddresses = networkInterface.inetAddresses
+                while (inetAddresses.hasMoreElements()) {
+                    val inetAddress = inetAddresses.nextElement()
+                    // 比较 IP 地址
+                    val hostAddress = inetAddress.hostAddress
+
+                    if (ipAddress == hostAddress) {
+                        return true // IP 地址匹配，是本机 IP
+                    }
+                }
+            }
+        } catch (e: SocketException) {
+            e.printStackTrace()
+        }
+        return false // 没有匹配的 IP 地址，不是本机 IP
+    }
+    /**
+     * ip测速是否成功
+     */
+    fun velocity(ip: String, count: Int = 4): Boolean {
+
+        var url = "${Constants.IP.VELOCITY_URL}/${
+            if (isPublicIPv6(ip)) {
+                Enums.IP.ipv6.name
+            } else if (isPublicIPv4(ip)) {
+                Enums.IP.ipv4.name
+            } else {
+                return false
+            }
+        }/${ip}/${count}/all"
+        LogUtil.d(TAG, "请求的url: $url")
+        val future = CompletableFuture<Boolean>()
+        Thread {
+            OkHttpClientUtil.asyncGet(url, object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    future.complete(false)
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    try {
+                        val pingResult = PingResult.toClass(response.body.string())
+                        future.complete(velocityIsSuccess(pingResult))
+                    } catch (e: Exception) {
+                        future.complete(false)
+                    } finally {
+                    }
+                }
+            })
+        }.start()
+
+        return future.get()
+    }
+
+    /**
+     * 判断ip是否可ping成功
+     */
+    private fun velocityIsSuccess(pingResult: PingResult): Boolean {
+        var isSuccess = false
+        kotlin.runCatching {
+            pingResult.pingResultDetail.forEach { pingResult ->
+                isSuccess = pingResult.code.equals(Enums.PingResult.PingSuccess.name)
+                if (isSuccess) {
+                    return@runCatching
+                }
+            }
+        }
+        return isSuccess
+    }
+
+    /**
+     * 判断是否是公共的ip地址
+     */
     fun isPublicIP(ipAddress: String): Boolean {
         return isPublicIP(InetAddress.getByName(ipAddress))
     }
 
+    /**
+     * 判断是否是公共的ipv6地址
+     */
     fun isPublicIP(ipAddress: InetAddress): Boolean {
         when (ipAddress) {
             is Inet4Address -> {
@@ -77,24 +172,28 @@ object IPUtil {
         return false;
     }
 
+    /**
+     * 判断是否是ipv6地址
+     */
     fun isIpv6(ipAddress: String): Boolean {
         val future = CompletableFuture<Boolean>()
-        Thread{
+        Thread {
             try {
                 when (InetAddress.getByName(ipAddress)) {
                     is Inet4Address -> {
-                        future.complete( false)
+                        future.complete(false)
                     }
 
                     is Inet6Address -> {
-                        future.complete( true)
+                        future.complete(true)
                     }
-                    else->{
-                        future.complete( false)
+
+                    else -> {
+                        future.complete(false)
                     }
                 }
-            }catch (e:Exception){
-                future.complete( false)
+            } catch (e: Exception) {
+                future.complete(false)
             }
 
         }.start()
@@ -102,6 +201,9 @@ object IPUtil {
         return future.get();
     }
 
+    /**
+     * 判断是否是公共的ipv4地址
+     */
     fun isPublicIPv4(ipAddress: Inet4Address): Boolean {
         return try {
             val addressBytes = ipAddress.address
@@ -115,9 +217,35 @@ object IPUtil {
         }
     }
 
+    /**
+     * 判断是否是公共的ipv4地址
+     */
+    fun isPublicIPv4(ipAddress: String): Boolean {
+        val inetAddress = InetAddress.getByName(ipAddress)
+        return if (inetAddress is Inet4Address) {
+            isPublicIPv4(inetAddress)
+        } else {
+            false
+        }
+    }
+
+    /**
+     * 判断是否是有效的ip地址
+     */
+    fun ipIsReachable(ipAddress: String): Boolean {
+        kotlin.runCatching {
+            val inetAddress = InetAddress.getByName(ipAddress)
+            return ipIsReachable(inetAddress);
+        }
+        return false
+    }
+
+    fun ipIsReachable(inetAddress: InetAddress): Boolean {
+        return inetAddress.isReachable(2000);
+    }
+
     fun isPublicIPv6(ipAddress: String): Boolean {
         val inetAddress = InetAddress.getByName(ipAddress)
-
         return if (inetAddress is Inet6Address) {
             isPublicIPv6(inetAddress)
         } else {

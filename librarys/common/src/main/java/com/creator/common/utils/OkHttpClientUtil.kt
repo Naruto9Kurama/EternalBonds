@@ -2,17 +2,17 @@ package com.creator.common.utils
 
 import okhttp3.*
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 object OkHttpClientUtil {
 
-    private val client = OkHttpClient()
+    private val client = OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS).build()
 
     // 异步 GET 请求
     fun asyncGet(url: String, callback: Callback) {
         val request = Request.Builder()
             .url(url)
             .build()
-
         client.newCall(request).enqueue(callback)
     }
 

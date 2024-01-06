@@ -1,16 +1,16 @@
 package com.creator.eternalbonds.activity
 
-import android.R
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.GravityCompat
-import androidx.drawerlayout.widget.DrawerLayout
 import com.creator.common.bean.VideoPlayerParams
+import com.creator.common.enums.Enums
 import com.creator.common.utils.IPUtil
+import com.creator.common.utils.LogUtil
+import com.creator.common.utils.ToastUtil
 import com.creator.eternalbonds.databinding.ActivityMainBinding
 import java.net.URI
+import java.util.concurrent.CompletableFuture
 
 
 class MainActivity : AppCompatActivity() {
@@ -22,31 +22,54 @@ class MainActivity : AppCompatActivity() {
     private lateinit var uri: URI
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        //        PermissionUtils.requestFilePermissions((Activity) context);
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val future = CompletableFuture<Boolean>()
+        IPUtil.getIpAddress(block = { ip, ips ->
+            try {
+                runOnUiThread {
+                    if (ips.isNotEmpty()) {
+                        VideoPlayerParams.getInstance().myIps = ips
+                        binding.openServeBtn.isClickable = true
+//                binding.openClientBtn.isClickable = true
+                    } else {
+                        binding.openServeBtn.text = "没有可用的ip地址，无法使用服务端"
+                    }
+                    addListener()
+                }
+            } catch (e: Exception) {
+
+            } finally {
+                future.complete(true)
+            }
+        })
+
+        if (future.get()) {
+            LogUtil.d(TAG, "加载完成")
+        }
+
+    }
+
+    fun addListener() {
+        //打开服务端
         binding.openServeBtn.setOnClickListener {
+            VideoPlayerParams.getInstance().playerRole = Enums.PlayerRole.Server
             startActivity(Intent(this, VideoActivity::class.java))
         }
+        //打开客户端
         binding.openClientBtn.setOnClickListener {
-
             val intent = Intent(this, VideoActivity::class.java)
-//            intent.putExtra("ip",binding.ipEdit.text.toString())
-            VideoPlayerParams.getInstance().serverIp = binding.ipEdit.text.toString()
-            startActivity(intent)
-        }
-
-        IPUtil.getIpAddress { ip ->
-            if (IPUtil.isIpv6(ip)) {
-                runOnUiThread {
-                    VideoPlayerParams.getInstance().myIp = ip.toString()
-                    binding.ipText.text = "你的ip地址为："+ip.toString()
-                }
+            val serverIp = binding.ipEdit.text.toString()
+            if (serverIp.isNotEmpty() && VideoPlayerParams.getInstance().setServerIp(serverIp)) {
+                VideoPlayerParams.getInstance().playerRole = Enums.PlayerRole.Client
+                startActivity(intent)
+            } else {
+                ToastUtil.show(this, "请先输入有效的服务端IP")
             }
         }
-
-
     }
 
 

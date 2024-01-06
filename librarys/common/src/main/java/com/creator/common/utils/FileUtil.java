@@ -1,5 +1,6 @@
 package com.creator.common.utils;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -14,20 +15,11 @@ import android.webkit.MimeTypeMap;
 
 import androidx.loader.content.CursorLoader;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class FileUtil {
     public static String TAG = "FileUtil";
+
 
     /**
      * 根据路径获取文件的MimeType
@@ -86,6 +78,8 @@ public class FileUtil {
         if (URIUtils.isHttpUri(uri)){
             return uri.toString();
         }
+//        PermissionUtils.requestFilePermissions((Activity) context);
+
         int sdkVersion = Build.VERSION.SDK_INT;
         if (sdkVersion < 11) return getRealPathFromUri_BelowApi11(context, uri);
         if (sdkVersion < 19) return getRealPathFromUri_Api11To18(context, uri);

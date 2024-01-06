@@ -33,7 +33,11 @@ object ExoPlayerSingleton {
         exoPlayer.removeListener(listener);
     }
 
+    /**
+     * 设置播放源
+     */
     fun setSource(uri: String, context: Context, isPlayWhenReady: Boolean = false) {
+        exoPlayer.clearMediaItems()
         // 创建一个MediaItem对象，表示要播放的媒体文件
         val mediaItem = MediaItem.fromUri(uri)
         // 设置数据源工厂

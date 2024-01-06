@@ -30,11 +30,14 @@ data object Constants {
 //            "http://ip-api.com/json",
             "https://ipinfo.io/ip"
         )
+        const val VELOCITY_URL = "https://ipw.cn/api/ping"
+        const val IPV4 = "ipv4"
+        const val IPV6 = "ipv6"
     }
 
 
-    object Video{
-       val MIME_TYPE= mapOf<Enums.VideoType,String>(
+    object Video {
+        val MIME_TYPE = mapOf<Enums.VideoType, String>(
             Enums.VideoType.MKV to "video/x-matroska",
             Enums.VideoType.MP4 to "video/mp4",
         )

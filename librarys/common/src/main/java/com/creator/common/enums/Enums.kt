@@ -15,4 +15,13 @@ object Enums {
     enum class PlaybackSource{
         LOCAL_FILES,HTTP,SCREEN_CASTING
     }
+
+    enum class IP{
+        ipv4,ipv6,IPV4,IPV6
+    }
+
+    enum class PingResult{
+        PingSuccess,PingFailed
+    }
+
 }
