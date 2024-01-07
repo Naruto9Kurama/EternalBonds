@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val future = CompletableFuture<Boolean>()
-        IPUtil.getIpAddress(block = { ip, ips ->
+        IPUtil.getIpAddress(block = { _, ips ->
             try {
                 runOnUiThread {
                     if (ips.isNotEmpty()) {

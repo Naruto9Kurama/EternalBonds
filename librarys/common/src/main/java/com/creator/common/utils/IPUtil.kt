@@ -19,11 +19,11 @@ object IPUtil {
 
     private const val TAG = "IPUtil"
     fun getIpAddress(
-        block: ((ip: String,ips:Set<String>) -> Unit)? = null,
+        block: ((ip: String, ips: Set<String>) -> Unit)? = null,
     ) {
         var ips = HashSet<String>()
         Constants.IP.REQUEST_URL.forEachIndexed() { index, url ->
-            LogUtil.d(TAG,"准备请求ip")
+            LogUtil.d(TAG, "准备请求ip")
             OkHttpClientUtil.asyncGet(url, object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                 }
@@ -33,17 +33,14 @@ object IPUtil {
                     try {
                         LogUtil.d(TAG, ip)
 
-                        if (isLocalIpAddress(ip)&&velocity(ip)) {//ip是否是本机ip且可ping通
+                        if (isLocalIpAddress(ip) && velocity(ip)) {//ip是否是本机ip且可ping通
                             ips.add(ip)
-                            block?.invoke(ip,ips)
                         }
                     } catch (e: Exception) {
 
                     } finally {
-
+                        block?.invoke(ip, ips)
                     }
-
-
                 }
             })
         }
@@ -96,6 +93,7 @@ object IPUtil {
         }
         return false // 没有匹配的 IP 地址，不是本机 IP
     }
+
     /**
      * ip测速是否成功
      */

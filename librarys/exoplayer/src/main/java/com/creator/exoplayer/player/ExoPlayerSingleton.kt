@@ -12,7 +12,6 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Log
 import com.google.android.exoplayer2.util.Util
 
-
 @SuppressLint("StaticFieldLeak")
 object ExoPlayerSingleton {
     private const val TAG = "ExoPlayerSingleton"
@@ -54,7 +53,7 @@ object ExoPlayerSingleton {
         exoPlayer.setMediaSource(mediaSource)
         // 准备播放
         exoPlayer.prepare()
-        if (isPlayWhenReady) exoPlayer.playWhenReady = true;
+        if (isPlayWhenReady) exoPlayer.playWhenReady = true
     }
 
     fun play() {
