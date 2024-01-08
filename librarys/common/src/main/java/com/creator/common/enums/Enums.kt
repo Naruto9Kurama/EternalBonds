@@ -24,4 +24,5 @@ object Enums {
         PingSuccess,PingFailed
     }
 
+
 }

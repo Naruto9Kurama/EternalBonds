@@ -2,10 +2,13 @@ package com.creator.exoplayer.fragment
 
 import android.Manifest
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
+import android.view.WindowManager.LayoutParams
 import android.widget.RadioButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -17,6 +20,7 @@ import com.creator.common.bean.VideoPlayerParams
 import com.creator.common.enums.Enums
 import com.creator.common.utils.AppPermissionUtil
 import com.creator.common.utils.LogUtil
+import com.creator.common.utils.ScreenUtil
 import com.creator.common.utils.ToastUtil
 import com.creator.exoplayer.databinding.FragmentVideoPageBinding
 import com.creator.nanohttpd.server.VideoNanoHttpDServer
@@ -27,6 +31,7 @@ import org.java_websocket.handshake.ServerHandshake
 import org.java_websocket.server.WebSocketServer
 import java.net.InetSocketAddress
 import java.net.URI
+
 
 class VideoPageFragment : Fragment() {
 
@@ -200,7 +205,6 @@ class VideoPageFragment : Fragment() {
                     }
                 })
         }
-
         //侧边栏
         binding.btnOpenDrawer.setOnClickListener {
             val drawerLayout = binding.drawerLayout
@@ -210,7 +214,41 @@ class VideoPageFragment : Fragment() {
                 drawerLayout.openDrawer(GravityCompat.START)
             }
         }
+    }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        LogUtil.d(TAG, "onOrientationChanged:::$newConfig")
+        setPlayerFull(newConfig)
+    }
+
+    /**
+     * 判断是否需要设置播放器全屏
+     */
+    fun setPlayerFull(newConfig: Configuration) {
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            setFullScreen(true);
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            setFullScreen(false);
+        }
+    }
+    /**
+     * 设置播放器是否全屏
+     */
+    private fun setFullScreen(fullScreen: Boolean) {
+        val layoutParams = binding.playerView.layoutParams
+        if (fullScreen) {
+            layoutParams.height = LayoutParams.MATCH_PARENT
+
+            // 隐藏状态栏和导航栏，并启用沉浸式模式
+            requireActivity().window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    or View.SYSTEM_UI_FLAG_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)
+        } else {
+            layoutParams.height = ScreenUtil.dip2px(context, 200f)
+            activity?.window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+        }
+        binding.playerView.layoutParams = layoutParams
     }
 
     fun removePlayerListener() {
