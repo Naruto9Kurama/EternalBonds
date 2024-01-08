@@ -28,15 +28,17 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val future = CompletableFuture<Boolean>()
-        IPUtil.getIpAddress(block = { _, ips ->
+        IPUtil.getIpAddress(block = { _, allIps, pubIps, priIps ->
             try {
                 runOnUiThread {
-                    if (ips.isNotEmpty()) {
-                        VideoPlayerParams.getInstance().myIps = ips
-                        binding.openServeBtn.isClickable = true
-//                binding.openClientBtn.isClickable = true
-                    } else {
-                        binding.openServeBtn.text = "没有可用的ip地址，无法使用服务端"
+                    if (allIps.isNotEmpty()) {
+                        VideoPlayerParams.getInstance().myIps = allIps
+                    }
+                    if (pubIps.isNotEmpty()) {
+                        VideoPlayerParams.getInstance().myPublicIps = pubIps
+                    }
+                    if (priIps.isNotEmpty()) {
+                        VideoPlayerParams.getInstance().myPrivateIps = priIps
                     }
                     addListener()
                 }

@@ -24,6 +24,9 @@ public class VideoPlayerParams {
     }
 
     private Set<String> myIps = new HashSet<>(); //我的ip地址
+    private Set<String> myPublicIps = new HashSet<>(); //我的公网ip地址
+    private Set<String> myPrivateIps = new HashSet<>(); //我的私有ip地址
+
     private String serverIp;//房间服务器ip
     private Enums.PlayerRole playerRole;
     private List<String> ip = new ArrayList<>(); //ip地址
@@ -36,6 +39,7 @@ public class VideoPlayerParams {
     }
 
     public boolean setServerIp(String serverIp) {
+
         if (!IPUtil.INSTANCE.ipIsReachable(serverIp)) {//判断是否是有效ip
             return false;
         }
@@ -44,6 +48,22 @@ public class VideoPlayerParams {
         }
         this.serverIp = serverIp;
         return true;
+    }
+
+    public Set<String> getMyPublicIps() {
+        return myPublicIps;
+    }
+
+    public void setMyPublicIps(Set<String> myPublicIps) {
+        this.myPublicIps = myPublicIps;
+    }
+
+    public Set<String> getMyPrivateIps() {
+        return myPrivateIps;
+    }
+
+    public void setMyPrivateIps(Set<String> myPrivateIps) {
+        this.myPrivateIps = myPrivateIps;
     }
 
     public Enums.PlayerRole getPlayerRole() {
@@ -67,12 +87,17 @@ public class VideoPlayerParams {
     }
 
     public String getMyIp() {
-        for (String ip : myIps) {
-            if (IPUtil.INSTANCE.isPublicIPv6(ip)) {
-                return ip;
+        if (!myPublicIps.isEmpty()){
+            for (String ip : myPublicIps) {
+                if (IPUtil.INSTANCE.isPublicIPv6(ip)) {
+                    return ip;
+                }
             }
+            return myPublicIps.toArray()[0].toString();
+        }else {
+            return myPrivateIps.toArray()[0].toString();
         }
-        return myIps.toArray()[0].toString();
+
     }
 
     public Set<String> getMyIps() {
@@ -101,7 +126,7 @@ public class VideoPlayerParams {
     }
 
     public VideoItemBean getCurrentVideoItemBean() {
-        return videoItemBeanList.get(0);
+        return videoItemBeanList.get(videoItemBeanList.size() - 1);
     }
 
     public void setVideoItemBeanList(List<VideoItemBean> videoItemBeanList) {
@@ -110,7 +135,10 @@ public class VideoPlayerParams {
 
     public VideoPlayerParams toClass(String str) {
         VideoPlayerParams videoPlayerParams = new Gson().fromJson(str, VideoPlayerParams.class);
-        videoPlayerParams.myIps = VideoPlayerParams.getInstance().myIps;
+        videoPlayerParams.myIps = this.videoPlayerParams.myIps;
+        videoPlayerParams.myPublicIps = this.videoPlayerParams.myPublicIps;
+        videoPlayerParams.myPrivateIps = this.videoPlayerParams.myPrivateIps;
+        videoPlayerParams.serverIp = this.videoPlayerParams.serverIp;
         this.videoPlayerParams = videoPlayerParams;
         return this.videoPlayerParams;
     }

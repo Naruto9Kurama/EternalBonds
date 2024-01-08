@@ -2,13 +2,16 @@ package com.creator.common.bean;
 
 import com.creator.common.Constants;
 import com.creator.common.enums.Enums;
+import com.creator.common.utils.LogUtil;
 
 public class VideoItemBean {
+    private final String TAG="VideoItemBean";
     private Enums.PlaybackSource playbackSource; //播放源
     private String uri;//视频的uri
     private String ip;//视频归属哪个ip地址
 
     private Long currentPosition;//视频播放位置
+    private int playerState;//播放状态 缓冲中:Player.STATE_BUFFERING 准备好播放:Player.STATE_READY 播放已结束:Player.STATE_ENDED 处于空闲状态:Player.STATE_IDLE
     private String localUri;//如果播放器角色是服务端，且播放源为本地文件，localUri存储为本地文件的路径
 
     public Long getCurrentPosition() {
@@ -21,7 +24,8 @@ public class VideoItemBean {
 
     public void setLocalUri(String localUri) {
         this.localUri = localUri;
-        this.uri = "http://" + VideoPlayerParams.getInstance().getMyIp() + ":" + Constants.NanoHttpd.PORT+"/video";
+        this.uri = "http://" + VideoPlayerParams.getInstance().getMyIp() + ":" + Constants.NanoHttpd.PORT + "/video";
+//        this.uri = "http://" + VideoPlayerParams.getInstance().getMyIp() + ":" + Constants.NanoHttpd.PORT+"/video";
     }
 
     public Enums.PlayerRole getPlayerRole() {
@@ -30,6 +34,14 @@ public class VideoItemBean {
         } else {
             return Enums.PlayerRole.Client;
         }
+    }
+
+    public int getPlayerState() {
+        return playerState;
+    }
+
+    public void setPlayerState(int playerState) {
+        this.playerState = playerState;
     }
 
     public Enums.PlaybackSource getPlaybackSource() {
@@ -41,11 +53,18 @@ public class VideoItemBean {
     }
 
     public String getUri() {
-        if (getPlayerRole() == Enums.PlayerRole.Server && playbackSource == Enums.PlaybackSource.LOCAL_FILES) {
-            return localUri;
-        } else {
-            return uri;
+
+        if (playbackSource == Enums.PlaybackSource.LOCAL_FILES) {
+            switch (getPlayerRole()) {
+                case Server:
+                    return localUri;
+                case Client:
+                    String uri = "http://" + VideoPlayerParams.getInstance().getServerIp() + ":" + Constants.NanoHttpd.PORT+"/video";
+                    LogUtil.INSTANCE.d(TAG,uri,null);
+                    return uri;
+            }
         }
+        return uri;
     }
 
     public void setUri(String uri) {

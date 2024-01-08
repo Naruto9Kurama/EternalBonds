@@ -35,7 +35,7 @@ class VideoPageFragment : Fragment() {
     private lateinit var localFilesRadioButton: RadioButton
     private lateinit var httpRadioButton: RadioButton
     private lateinit var screenCastingRadioButton: RadioButton
-    private  var localFileUri: String?=null
+    private var localFileUri: String? = null
     private var videoPlayerParams: VideoPlayerParams = VideoPlayerParams.getInstance()
     lateinit var player: VideoPlayerFragment
     var videoNanoHttpDServer: VideoNanoHttpDServer? = null
@@ -43,6 +43,50 @@ class VideoPageFragment : Fragment() {
     private val isServer = videoPlayerParams.playerRole == Enums.PlayerRole.Server
 
     private var isSeekTo = false
+
+    //监听事件
+    val listener = object : Player.Listener {
+        //播放状态变化监听
+        override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+            super.onPlayerStateChanged(playWhenReady, playbackState)
+            videoPlayerParams.currentVideoItemBean.playerState = playbackState
+            myWebSocket?.send()
+            when (playbackState) {
+                // 处于缓冲状态
+                Player.STATE_BUFFERING -> {
+                }
+                // 已准备好播放
+                Player.STATE_READY -> {
+
+                }
+                // 播放已结束
+                Player.STATE_ENDED -> {
+
+                }
+                // 播放器处于空闲状态
+                Player.STATE_IDLE -> {
+
+                }
+
+            }
+
+        }
+
+        //进度条变化监听
+        override fun onPositionDiscontinuity(reason: Int) {
+            super.onPositionDiscontinuity(reason)
+            LogUtil.d(TAG, "进度条变化")
+            if (!isSeekTo) {
+                val currentPosition = player.getCurrentPosition()
+                videoPlayerParams.currentVideoItemBean.currentPosition = currentPosition
+                LogUtil.d(TAG, "当前时间:::$currentPosition")
+                //发送当前变更位置
+                myWebSocket?.send()
+            }
+            isSeekTo = false
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -90,7 +134,7 @@ class VideoPageFragment : Fragment() {
         }
         addListener()
 
-        screenCastingRadioButton.visibility=View.GONE
+        screenCastingRadioButton.visibility = View.GONE
     }
 
     private fun addListener() {
@@ -101,12 +145,12 @@ class VideoPageFragment : Fragment() {
             videoItemBean.ip = videoPlayerParams.myIp
             when (binding.playbackRadioGroup.checkedRadioButtonId) {
                 localFilesRadioButton.id -> {
-                    if (localFileUri!=null){
+                    if (localFileUri != null) {
                         videoItemBean.setLocalUri(localFileUri)
                         videoItemBean.playbackSource = Enums.PlaybackSource.LOCAL_FILES
                         startNano()
-                    }else{
-                        ToastUtil.show(context,"请先选择视频文件")
+                    } else {
+                        ToastUtil.show(context, "请先选择视频文件")
                         return@setOnClickListener
                     }
 
@@ -114,12 +158,12 @@ class VideoPageFragment : Fragment() {
 
                 httpRadioButton.id -> {
                     val httpUri = binding.httpEditText.text.toString()
-                    if (httpUri.isNotEmpty()){
+                    if (httpUri.isNotEmpty()) {
                         videoItemBean.uri = httpUri
                         videoItemBean.playbackSource = Enums.PlaybackSource.HTTP
                         closeNano()
-                    }else{
-                        ToastUtil.show(context,"请先输入视频http地址")
+                    } else {
+                        ToastUtil.show(context, "请先输入视频http地址")
                         return@setOnClickListener
                     }
 
@@ -132,7 +176,7 @@ class VideoPageFragment : Fragment() {
                 }
             }
 
-            player.startPlay(videoItemBean.uri) {
+            startPlay() {
                 addPlayerListener()
             }
 
@@ -183,21 +227,6 @@ class VideoPageFragment : Fragment() {
 
     }
 
-    //视频进度条变化监听
-    val listener = object : Player.Listener {
-        override fun onPositionDiscontinuity(reason: Int) {
-            super.onPositionDiscontinuity(reason)
-            LogUtil.d(TAG, "进度条变化")
-            if (!isSeekTo) {
-                val currentPosition = player.getCurrentPosition()
-                videoPlayerParams.currentVideoItemBean.currentPosition = currentPosition
-                LogUtil.d(TAG, "当前时间:::$currentPosition")
-                //发送当前变更位置
-                myWebSocket?.send(videoPlayerParams)
-            }
-            isSeekTo = false
-        }
-    }
 
     fun seekTo(l: Long) {
         isSeekTo = true
@@ -231,11 +260,15 @@ class VideoPageFragment : Fragment() {
     /**
      * 开始播放
      */
-    fun startPlay() {
-        player.startPlay(videoPlayerParams.currentVideoUri)
+    fun startPlay(block: (() -> Unit)? = null) {
+//        if (videoPlayerParams.currentVideoItemBean.playerState==Player.STATE_READY){
+        player.startPlay(videoPlayerParams.currentVideoUri, block)
         if (videoPlayerParams.currentVideoItemBean.currentPosition != null) {
             player.seekTo(videoPlayerParams.currentVideoItemBean.currentPosition)
         }
+//        }else{
+//            player.pause()
+//        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -293,8 +326,8 @@ class VideoPageFragment : Fragment() {
             WebSocketServer(InetSocketAddress("::", port)) {
             override fun onOpen(conn: WebSocket, handshake: ClientHandshake?) {
                 websockets.add(conn)
+                send()
 
-                send(VideoPlayerParams.getInstance())
             }
 
             override fun onClose(conn: WebSocket?, code: Int, reason: String?, remote: Boolean) {
@@ -320,7 +353,7 @@ class VideoPageFragment : Fragment() {
          * 通过websocket接收到的消息更新视频数据
          */
         fun updateVideo(message: String?) {
-            val videoPlayerParams = VideoPlayerParams.getInstance().toClass(message)
+            videoPlayerParams = VideoPlayerParams.getInstance().toClass(message)
             LogUtil.d(TAG, videoPlayerParams.toString())
             if (videoPlayerParams != null) {
                 startPlay()
@@ -336,7 +369,10 @@ class VideoPageFragment : Fragment() {
                     LogUtil.e(TAG, "send失败：${videoPlayerParams.toString()}\n" + e.message, e)
                 }
             }
+        }
 
+        fun send() {
+            send(videoPlayerParams)
         }
     }
 

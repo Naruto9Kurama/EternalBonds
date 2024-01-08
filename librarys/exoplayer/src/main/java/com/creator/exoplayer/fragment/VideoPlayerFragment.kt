@@ -64,6 +64,10 @@ class VideoPlayerFragment : Fragment() {
         ExoPlayerSingleton.seekTo(l)
     }
 
+    fun pause(){
+        ExoPlayerSingleton.pause()
+    }
+
     companion object {
         @JvmStatic
         fun newInstance() =

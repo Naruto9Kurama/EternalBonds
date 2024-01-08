@@ -67,4 +67,8 @@ object ExoPlayerSingleton {
         }
     }
 
+    fun pause(){
+        exoPlayer.pause()
+    }
+
 }

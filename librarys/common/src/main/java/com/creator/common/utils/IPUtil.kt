@@ -11,6 +11,7 @@ import java.net.Inet4Address
 import java.net.Inet6Address
 import java.net.InetAddress
 import java.net.NetworkInterface
+import java.net.Socket
 import java.net.SocketException
 import java.util.concurrent.CompletableFuture
 import kotlin.experimental.and
@@ -19,9 +20,11 @@ object IPUtil {
 
     private const val TAG = "IPUtil"
     fun getIpAddress(
-        block: ((ip: String, ips: Set<String>) -> Unit)? = null,
+        block: ((ip: String, allIps: Set<String>, pubIps: Set<String>, priIps: Set<String>) -> Unit)? = null,
     ) {
-        var ips = HashSet<String>()
+        var ips = HashSet<String>()//公网ip
+        var allIps = HashSet<String>()//全部ip
+        var priIps = HashSet<String>()//私有ip
         Constants.IP.REQUEST_URL.forEachIndexed() { index, url ->
             LogUtil.d(TAG, "准备请求ip")
             OkHttpClientUtil.asyncGet(url, object : Callback {
@@ -32,14 +35,18 @@ object IPUtil {
                     var ip = response.body.string().trim().replace("\\n$".toRegex(), "")
                     try {
                         LogUtil.d(TAG, ip)
-
-                        if (isLocalIpAddress(ip) && velocity(ip)) {//ip是否是本机ip且可ping通
-                            ips.add(ip)
+                        if (isLocalIpAddress(ip)) {//ip是否是本机ip
+                            allIps.add(ip)
+                            if (velocity(ip)) {//测速是否成功
+                                ips.add(ip)
+                            } else {
+                                priIps.add(ip)
+                            }
                         }
                     } catch (e: Exception) {
 
                     } finally {
-                        block?.invoke(ip, ips)
+                        block?.invoke(ip, allIps, ips, priIps)
                     }
                 }
             })
@@ -232,14 +239,20 @@ object IPUtil {
      */
     fun ipIsReachable(ipAddress: String): Boolean {
         kotlin.runCatching {
-            val inetAddress = InetAddress.getByName(ipAddress)
-            return ipIsReachable(inetAddress);
+            val future = CompletableFuture<Boolean>()
+            Thread {
+                future.complete(isHostReachable(ipAddress, Constants.WebSocket.PORT))
+            }.start()
+            return future.get()
+            /*val inetAddress = InetAddress.getByName(ipAddress)
+            return ipIsReachable(inetAddress);*/
         }
         return false
     }
 
     fun ipIsReachable(inetAddress: InetAddress): Boolean {
-        return inetAddress.isReachable(2000);
+
+        return inetAddress.isReachable(3000);
     }
 
     fun isPublicIPv6(ipAddress: String): Boolean {
@@ -247,6 +260,21 @@ object IPUtil {
         return if (inetAddress is Inet6Address) {
             isPublicIPv6(inetAddress)
         } else {
+            false
+        }
+    }
+
+    /**
+     * 测试地址是否可达
+     */
+    fun isHostReachable(host: String, port: Int, timeout: Int = 3000): Boolean {
+        return try {
+            val socket = Socket()
+            socket.connect(java.net.InetSocketAddress(host, port), timeout)
+            socket.close()
+            true
+        } catch (e: Exception) {
+            LogUtil.d(TAG,"网络不可达")
             false
         }
     }
