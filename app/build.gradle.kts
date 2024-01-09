@@ -21,6 +21,14 @@ android {
             }
         }
     }
+    signingConfigs {
+        create("release") {
+            storeFile = file("../EternalBonds.jks")
+            storePassword = "Wjh1318094164"
+            keyAlias = "key0"
+            keyPassword = "Wjh1318094164"
+        }
+    }
 
     buildTypes {
         release {
@@ -29,6 +37,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
