@@ -75,24 +75,34 @@ object IPUtil {
 
 
     /**
+     * 获取本机全部InetAddress
+     */
+    fun getAllLocalInetAddress(): List<InetAddress> {
+        val networkInterfaces = NetworkInterface.getNetworkInterfaces()
+        var list = arrayListOf<InetAddress>()
+        while (networkInterfaces.hasMoreElements()) {
+            val networkInterface = networkInterfaces.nextElement()
+            // 获取每个网络接口的所有 IP 地址
+            val inetAddresses = networkInterface.inetAddresses
+            while (inetAddresses.hasMoreElements()) {
+                val inetAddress = inetAddresses.nextElement()
+                list.add(inetAddress)
+            }
+        }
+        return list
+    }
+
+    /**
      * 判断获取到的ip是否是本机ip
      */
     fun isLocalIpAddress(ipAddress: String): Boolean {
         try {
-            // 获取所有网络接口
-            val networkInterfaces = NetworkInterface.getNetworkInterfaces()
-            while (networkInterfaces.hasMoreElements()) {
-                val networkInterface = networkInterfaces.nextElement()
-                // 获取每个网络接口的所有 IP 地址
-                val inetAddresses = networkInterface.inetAddresses
-                while (inetAddresses.hasMoreElements()) {
-                    val inetAddress = inetAddresses.nextElement()
-                    // 比较 IP 地址
-                    val hostAddress = inetAddress.hostAddress
+            val allNetworkInterfaces = getAllLocalInetAddress()
+            allNetworkInterfaces.forEach {
+                val hostAddress = it.hostAddress
 
-                    if (ipAddress == hostAddress) {
-                        return true // IP 地址匹配，是本机 IP
-                    }
+                if (ipAddress == hostAddress) {
+                    return true // IP 地址匹配，是本机 IP
                 }
             }
         } catch (e: SocketException) {
@@ -274,7 +284,7 @@ object IPUtil {
             socket.close()
             true
         } catch (e: Exception) {
-            LogUtil.d(TAG,"网络不可达")
+            LogUtil.d(TAG, "网络不可达")
             false
         }
     }
