@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/nav_home"
-        android:title="同步播放视频"/>
+        android:id="@+id/nav_video"
+        android:icon="@drawable/nav_home"
+        android:title="视频"/>
     <item
-        android:id="@+id/nav_search"
+        android:id="@+id/nav_ad"
         android:title="广告"/>
-    <!--<item
-        android:id="@+id/nav_profile"
-        android:title="Profile"/>
     <item
-        android:id="@+id/nav_settings"
-        android:title="Settings"/>-->
+        android:id="@+id/nav_map"
+        android:icon="@drawable/nav_map"
+        android:title="地图"/>
 </menu>

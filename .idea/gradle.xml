@@ -16,6 +16,7 @@
             <option value="$PROJECT_DIR$/librarys/common" />
             <option value="$PROJECT_DIR$/librarys/exoplayer" />
             <option value="$PROJECT_DIR$/librarys/nanohttpd" />
+            <option value="$PROJECT_DIR$/librarys/test" />
             <option value="$PROJECT_DIR$/librarys/webrtc" />
             <option value="$PROJECT_DIR$/librarys/websocket" />
           </set>

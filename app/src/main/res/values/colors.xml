@@ -12,6 +12,14 @@
     <color name="selected_background">#ffaa3f</color>
     <color name="default_background">#3d3d3d</color>
 
+
+    <!--主要颜色-->
+    <color name="primary">#5b67ca</color>
+    <color name="input_box">#f6f6f6</color>
+    <color name="nav">#EFEFEF</color>
+
+
+
     <!--黑色 -->
     <color name="black">#2C2C2C</color>
     <!--蓝色 -->

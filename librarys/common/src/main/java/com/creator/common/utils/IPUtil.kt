@@ -13,18 +13,58 @@ import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.Socket
 import java.net.SocketException
+import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
 import kotlin.experimental.and
+
 
 object IPUtil {
 
     private const val TAG = "IPUtil"
-    fun getIpAddress(
+    fun getIpAddress(block: ((allIps: Set<String>, pubIps: Set<String>, priIps: Set<String>) -> Unit)? = null) {
+        var ips = HashSet<String>()//公网ip
+        var allIps = HashSet<String>()//全部ip
+        var priIps = HashSet<String>()//私有ip
+        //获取全部可用ip
+        val localInetAddress = getLocalInetAddress()
+        //保存线程任务
+        val tasks: ArrayList<Callable<Void>> = ArrayList<Callable<Void>>()
+        localInetAddress.forEach {
+            tasks.add(Callable {
+                allIps.add(it)
+                if (velocity(it)) {
+                    ips.add(it)
+                } else {
+                    priIps.add(it)
+                }
+                null
+            })
+
+        }
+
+        kotlin.runCatching {
+            LogUtil.d(TAG, System.currentTimeMillis().toString())
+            // 提交所有任务并等待它们执行完毕
+            val newFixedThreadPool = Executors.newFixedThreadPool(5)
+            newFixedThreadPool.invokeAll(tasks)//等待所有任务执行完成
+            newFixedThreadPool.shutdown()
+            LogUtil.d(TAG, System.currentTimeMillis().toString())
+        }
+
+        block?.invoke(allIps, ips, priIps)
+
+    }
+
+    fun getIpAddressByIntent(
         block: ((ip: String, allIps: Set<String>, pubIps: Set<String>, priIps: Set<String>) -> Unit)? = null,
     ) {
         var ips = HashSet<String>()//公网ip
         var allIps = HashSet<String>()//全部ip
         var priIps = HashSet<String>()//私有ip
+        val localInetAddress = getLocalInetAddress()
         Constants.IP.REQUEST_URL.forEachIndexed() { index, url ->
             LogUtil.d(TAG, "准备请求ip")
             OkHttpClientUtil.asyncGet(url, object : Callback {
@@ -71,6 +111,22 @@ object IPUtil {
 
             })
         }
+    }
+
+    /**
+     * 获取本机非本地回环全部ip地址
+     */
+    fun getLocalInetAddress(): ArrayList<String> {
+        val allNetworkInterfaces = getAllLocalInetAddress()
+        var list = arrayListOf<String>()
+        allNetworkInterfaces.forEach {
+            if (!it.isAnyLocalAddress && !it.isLoopbackAddress && !it.isLinkLocalAddress) {
+                val hostAddress = it.hostAddress
+                LogUtil.d(TAG, hostAddress)
+                list.add(hostAddress)
+            }
+        }
+        return list
     }
 
 

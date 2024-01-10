@@ -3,7 +3,7 @@
    >
 <application >
     <activity
-        android:name=".RequestPermissionsHelpActivity"
+        android:name=".activity.RequestPermissionsHelpActivity"
         android:configChanges="keyboardHidden|orientation|screenSize|navigation|keyboard"
         android:theme="@style/transparencyActivityStyle" />
 </application>

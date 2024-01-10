@@ -1,65 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".fragment.VideoPageFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-
         <!--播放器-->
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/playerView"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
-            />
+            android:layout_height="200dp" />
 
         <!--播放器下方区域-->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/snow">
-
-            <!--显示ip地址文本-->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/ipTextCard"
-                android:layout_width="wrap_content"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:layout_marginTop="3dp"
-                app:cardBackgroundColor="@color/blanchedalmond"
-                app:cardCornerRadius="30dp"
-                android:layout_height="wrap_content">
-                <TextView
-                    android:id="@+id/ipText"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:textIsSelectable="true"
-                    android:text="你的ip地址为"/>
-            </androidx.cardview.widget.CardView>
             <!--聊天-->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
-                app:layout_constraintBottom_toBottomOf="@+id/chatInputCart"
-                app:cardBackgroundColor="@color/transparent"
+                android:layout_height="wrap_content"
                 android:background="@color/transparent"
+                app:cardBackgroundColor="@color/transparent"
                 app:cardCornerRadius="20dp"
-                android:layout_height="wrap_content">
+                app:layout_constraintBottom_toBottomOf="@+id/chatInputCart">
+
                 <LinearLayout
                     android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:layout_marginBottom="40dp"
-                    android:background="@color/ivory"
-                    android:layout_height="match_parent">
+                    android:background="@color/ivory">
+
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/chatView"
-                        android:background="@color/transparent"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"/>
+                        android:layout_height="match_parent"
+                        android:background="@color/transparent" />
                 </LinearLayout>
 
             </androidx.cardview.widget.CardView>
@@ -67,30 +48,34 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/btnOpenDrawer"
                 android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_margin="10dp"
+                app:cardBackgroundColor="?colorPrimary"
                 app:cardCornerRadius="50dp"
                 app:layout_constraintBottom_toTopOf="@+id/chatInputCart"
-                app:layout_constraintRight_toRightOf="parent"
-                app:cardBackgroundColor="@color/powderblue"
-                android:layout_margin="10dp"
-                android:layout_height="50dp">
+                app:layout_constraintRight_toRightOf="parent">
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
                     android:orientation="vertical">
+
                     <View
                         android:layout_width="20dp"
                         android:layout_height="3dp"
                         android:layout_marginBottom="7dp"
                         android:background="@color/white" />
+
                     <View
                         android:layout_width="30dp"
                         android:layout_height="3dp"
                         android:background="@color/white" />
+
                     <View
                         android:layout_width="20dp"
-                        android:layout_marginTop="7dp"
                         android:layout_height="3dp"
+                        android:layout_marginTop="7dp"
                         android:background="@color/white" />
                 </LinearLayout>
 
@@ -99,68 +84,87 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/chatInputCart"
                 android:layout_width="match_parent"
-                app:cardCornerRadius="5dp"
+                android:layout_height="40dp"
                 app:cardBackgroundColor="@color/transparent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                android:layout_height="40dp">
+                app:cardCornerRadius="5dp"
+                app:layout_constraintBottom_toBottomOf="parent">
+
                 <LinearLayout
                     android:id="@+id/inputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
+
                     <androidx.appcompat.widget.AppCompatEditText
                         android:id="@+id/chatEdit"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:background="@color/white"
-                        />
+                        android:background="@color/white" />
 
                     <androidx.cardview.widget.CardView
                         android:layout_width="wrap_content"
-                        app:cardBackgroundColor="@color/beige"
-                        android:layout_height="match_parent">
+                        android:layout_height="match_parent"
+                        app:cardBackgroundColor="@color/beige">
+
                         <com.google.android.material.textview.MaterialTextView
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
                             android:gravity="center"
                             android:paddingLeft="15dp"
                             android:paddingRight="15dp"
-                            android:text="发送"/>
+                            android:text="发送" />
                     </androidx.cardview.widget.CardView>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
             <!--侧边栏-->
             <androidx.drawerlayout.widget.DrawerLayout
                 android:id="@+id/drawerLayout"
-                app:layout_constraintLeft_toLeftOf="parent"
-                android:layout_width="250dp"
+                android:layout_width="300dp"
+                android:layout_height="match_parent"
                 android:background="@color/transparent"
-                android:layout_height="match_parent">
-                <LinearLayout
+                app:layout_constraintLeft_toLeftOf="parent">
+
+                <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
-                    android:gravity="center"
+                    android:layout_height="wrap_content"
                     android:layout_gravity="start"
-                    android:layout_height="match_parent">
-                    <androidx.cardview.widget.CardView
+                    app:cardBackgroundColor="@color/lightgray"
+                    app:cardCornerRadius="20dp">
+
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        app:cardCornerRadius="20dp"
-                        app:cardBackgroundColor="@color/lightgray"
-                        android:layout_height="wrap_content">
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+                        <!--ip-->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <TextView
+                                android:id="@+id/ipText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="你的ip地址为"
+                                android:textIsSelectable="true" />
+                        </LinearLayout>
                         <!--选择视频文件-->
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:orientation="vertical">
+
                             <RadioGroup
                                 android:id="@+id/playbackRadioGroup"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content">
+
                                 <com.google.android.material.radiobutton.MaterialRadioButton
                                     android:id="@+id/localFilesRadioButton"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:checked="true"
-                                    android:text="本地文件"/>
+                                    android:text="本地文件" />
+
                                 <LinearLayout
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
@@ -168,10 +172,10 @@
 
                                     <com.google.android.material.button.MaterialButton
                                         android:id="@+id/chooseFileBtn"
-                                        app:cornerRadius="20dp"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="选择文件" />
+                                        android:text="选择文件"
+                                        app:cornerRadius="20dp" />
 
                                     <TextView
                                         android:id="@+id/chooseFilePathText"
@@ -189,6 +193,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:orientation="horizontal">
+
                                     <EditText
                                         android:id="@+id/httpEditText"
                                         android:layout_width="wrap_content"
@@ -204,24 +209,18 @@
                             </RadioGroup>
 
                             <com.google.android.material.button.MaterialButton
-                                app:cornerRadius="20dp"
                                 android:id="@+id/startPlayer"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="播放" />
+                                android:text="播放"
+                                app:cornerRadius="20dp" />
                         </LinearLayout>
-                    </androidx.cardview.widget.CardView>
-                </LinearLayout>
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
             </androidx.drawerlayout.widget.DrawerLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
-
-
-
-
-
-
-
 
 
 </FrameLayout>

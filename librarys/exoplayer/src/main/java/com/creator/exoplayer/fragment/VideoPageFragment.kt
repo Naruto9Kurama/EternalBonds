@@ -7,17 +7,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.view.WindowManager.LayoutParams
 import android.widget.RadioButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
+import com.creator.common.activity.BaseActivity
 import com.creator.common.Constants
 import com.creator.common.bean.FileBean
 import com.creator.common.bean.VideoItemBean
 import com.creator.common.bean.VideoPlayerParams
 import com.creator.common.enums.Enums
+import com.creator.common.fragment.BaseFragment
 import com.creator.common.utils.AppPermissionUtil
 import com.creator.common.utils.LogUtil
 import com.creator.common.utils.ScreenUtil
@@ -33,10 +34,9 @@ import java.net.InetSocketAddress
 import java.net.URI
 
 
-class VideoPageFragment : Fragment() {
+class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
 
     private val TAG = "VideoPageFragment"
-    private lateinit var binding: FragmentVideoPageBinding
     private lateinit var localFilesRadioButton: RadioButton
     private lateinit var httpRadioButton: RadioButton
     private lateinit var screenCastingRadioButton: RadioButton
@@ -92,28 +92,14 @@ class VideoPageFragment : Fragment() {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-        }
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        binding = FragmentVideoPageBinding.inflate(layoutInflater)
-        player = VideoPlayerFragment.newInstance()
-        // 使用 FragmentManager 启动 Fragment
-        childFragmentManager.beginTransaction().replace(binding.playerView.id, player).commit()
-        init()
-        return binding.root
-    }
 
     /**
      * 初始化对象
      */
-    private fun init() {
+     override fun init() {
+        player = VideoPlayerFragment.newInstance()
+        // 使用 FragmentManager 启动 Fragment
+        childFragmentManager.beginTransaction().replace(binding.playerView.id, player).commit()
         //初始化websocket
         if (myWebSocket == null) {
             myWebSocket = MyWebSocket()
@@ -129,12 +115,29 @@ class VideoPageFragment : Fragment() {
             binding.ipText.text = videoPlayerParams.serverIp
             binding.btnOpenDrawer.visibility = View.GONE
         } else {
-            //服务端
-            binding.ipText.text = "  你的ip地址为:\n"
             var i = 1
-            videoPlayerParams.myIps.forEach {
+            //服务端
+            if (videoPlayerParams.myPublicIps.size>0){
+                binding.ipText.text = "  你的可用公网ip地址为:\n"
+                videoPlayerParams.myPublicIps.forEach {
+                    binding.ipText.text =
+                        binding.ipText.text.toString() + "  " + i++.toString() + ": " + it + "  \n"
+                }
+            }else{
+                binding.ipText.text = "  你没有可用的公网ip地址,无法在非同一网络下进行连接\n"
+            }
+
+            if (videoPlayerParams.myPrivateIps.size>0){
                 binding.ipText.text =
-                    binding.ipText.text.toString() + "  " + i++.toString() + ": " + it + "  \n"
+                    binding.ipText.text.toString() + "  你的可用内网ip地址为:\n"
+                i = 1
+                videoPlayerParams.myPrivateIps.forEach {
+                    binding.ipText.text =
+                        binding.ipText.text.toString() + "  " + i++.toString() + ": " + it + "  \n"
+                }
+            }else{
+                binding.ipText.text =
+                    binding.ipText.text.toString() + "  你没有可用的内网ip地址\n"
             }
         }
         addListener()
@@ -142,7 +145,7 @@ class VideoPageFragment : Fragment() {
         screenCastingRadioButton.visibility = View.GONE
     }
 
-    private fun addListener() {
+    override fun addListener() {
         //播放按钮
         binding.startPlayer.setOnClickListener {
             val videoItemBean = VideoItemBean()
@@ -227,11 +230,12 @@ class VideoPageFragment : Fragment() {
      */
     fun setPlayerFull(newConfig: Configuration) {
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            setFullScreen(true);
+            setFullScreen(true)
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            setFullScreen(false);
+            setFullScreen(false)
         }
     }
+
     /**
      * 设置播放器是否全屏
      */
@@ -241,12 +245,10 @@ class VideoPageFragment : Fragment() {
             layoutParams.height = LayoutParams.MATCH_PARENT
 
             // 隐藏状态栏和导航栏，并启用沉浸式模式
-            requireActivity().window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)
+            entryFullscreen()
         } else {
             layoutParams.height = ScreenUtil.dip2px(context, 200f)
-            activity?.window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+            entryImmersiveMode()
         }
         binding.playerView.layoutParams = layoutParams
     }
@@ -254,7 +256,15 @@ class VideoPageFragment : Fragment() {
     fun removePlayerListener() {
         player.removeListener(listener)
     }
-
+    /**
+     * 进入沉浸模式
+     */
+    fun entryImmersiveMode() {
+        (activity as BaseActivity<*>).entryImmersiveMode()
+    }
+    fun entryFullscreen() {
+        (activity as BaseActivity<*>).entryFullscreen()
+    }
     fun addPlayerListener() {
         player.addListener(listener)
     }
@@ -291,6 +301,7 @@ class VideoPageFragment : Fragment() {
         if (videoNanoHttpDServer != null) {
             videoNanoHttpDServer?.stop()
             videoNanoHttpDServer = null
+            ToastUtil.show(context, "已关闭NanoHttpD")
         }
 
     }
@@ -320,20 +331,29 @@ class VideoPageFragment : Fragment() {
         }
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        myWebSocket?.close()
+        closeNano()
+    }
 
     inner class MyWebSocket {
 
         private var websockets = ArrayList<WebSocket>()
+        private lateinit var exoPlayerWebSocketServer: ExoPlayerWebSocketServer
+        private lateinit var exoPlayerWebSocketClient: ExoPlayerWebSocketClient
 
         init {
             //根据播放器角色创建对应的websocket类
-            when (VideoPlayerParams.getInstance().serverIp) {
-                null -> {
-                    ExoPlayerWebSocketServer().start()
+            when (VideoPlayerParams.getInstance().playerRole) {
+                Enums.PlayerRole.Server -> {
+                    exoPlayerWebSocketServer = ExoPlayerWebSocketServer()
+                    exoPlayerWebSocketServer.start()
                 }
 
-                else -> {
-                    ExoPlayerWebSocketClient().connect()
+                Enums.PlayerRole.Client -> {
+                    exoPlayerWebSocketClient = ExoPlayerWebSocketClient()
+                    exoPlayerWebSocketClient.connect()
                 }
             }
         }
@@ -351,7 +371,17 @@ class VideoPageFragment : Fragment() {
             }
 
             override fun onClose(code: Int, reason: String?, remote: Boolean) {
-                LogUtil.e(TAG, "onError$reason")
+                LogUtil.e(TAG, "onClose$reason")
+                websockets.clear()
+                if (remote) {
+                    ToastUtil.show(context, "对方已断开连接")
+
+                    activity?.finish()
+                } else {
+                    ToastUtil.show(context, "重新连接")
+                    connect()
+                }
+
             }
 
             override fun onError(ex: java.lang.Exception?) {
@@ -365,10 +395,17 @@ class VideoPageFragment : Fragment() {
             override fun onOpen(conn: WebSocket, handshake: ClientHandshake?) {
                 websockets.add(conn)
                 send()
-
             }
 
             override fun onClose(conn: WebSocket?, code: Int, reason: String?, remote: Boolean) {
+                if (remote) {
+                    ToastUtil.show(context, "${conn.toString()}已断开连接")
+                    websockets.remove(conn)
+                } else {
+                    ToastUtil.show(context, "${conn.toString()}已断开连接")
+
+                    activity?.finish()
+                }
             }
 
             override fun onMessage(conn: WebSocket?, message: String?) {
@@ -383,7 +420,32 @@ class VideoPageFragment : Fragment() {
             override fun onStart() {
                 LogUtil.d(TAG, "onStart")
                 ToastUtil.show(requireContext(), "WebSocket服务启动成功")
+            }
 
+            override fun start() {
+                try {
+                    super.start()
+                } catch (e: Exception) {
+                    ToastUtil.show(context, "websocket服务端口被占用,无法启动成功")
+                    activity?.finish()
+                }
+            }
+        }
+
+        fun close() {
+            kotlin.runCatching {
+                //根据播放器角色创建对应的websocket类
+                when (VideoPlayerParams.getInstance().playerRole) {
+                    Enums.PlayerRole.Server -> {
+                        exoPlayerWebSocketServer.stop()
+                    }
+
+                    Enums.PlayerRole.Client -> {
+                        exoPlayerWebSocketClient.close()
+                    }
+                }
+                myWebSocket = null
+                ToastUtil.show(context, "已关闭websocket")
             }
         }
 

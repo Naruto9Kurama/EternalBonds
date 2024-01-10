@@ -1,79 +1,52 @@
 package com.creator.eternalbonds.activity
 
 import android.content.Intent
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import com.creator.common.activity.BaseActivity
 import com.creator.common.bean.VideoPlayerParams
 import com.creator.common.enums.Enums
 import com.creator.common.utils.IPUtil
-import com.creator.common.utils.LogUtil
 import com.creator.common.utils.ToastUtil
+import com.creator.eternalbonds.R
 import com.creator.eternalbonds.databinding.ActivityMainBinding
-import java.net.URI
-import java.util.concurrent.CompletableFuture
+import com.creator.eternalbonds.fragment.VideoFragment
+import com.google.android.material.navigation.NavigationBarView
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity<ActivityMainBinding>() {
 
-    private val TAG = "MainActivity"
-    private lateinit var binding: ActivityMainBinding
+    override fun init() {
+        replaceFragment(VideoFragment())
+        //获取ip地址
+        IPUtil.getIpAddress{allIps,pubIps,priIps->
+            if (allIps.isNotEmpty()) {
+                VideoPlayerParams.getInstance().myIps = allIps
+            }
+            if (pubIps.isNotEmpty()) {
+                VideoPlayerParams.getInstance().myPublicIps = pubIps
+            }
+            if (priIps.isNotEmpty()) {
+                VideoPlayerParams.getInstance().myPrivateIps = priIps
+            }
+        }
 
-    private lateinit var videoAddress: String
-    private lateinit var uri: URI
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        //        PermissionUtils.requestFilePermissions((Activity) context);
+    }
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        val future = CompletableFuture<Boolean>()
-        IPUtil.getIpAddress(block = { _, allIps, pubIps, priIps ->
-            try {
-                runOnUiThread {
-                    if (allIps.isNotEmpty()) {
-                        VideoPlayerParams.getInstance().myIps = allIps
-                    }
-                    if (pubIps.isNotEmpty()) {
-                        VideoPlayerParams.getInstance().myPublicIps = pubIps
-                    }
-                    if (priIps.isNotEmpty()) {
-                        VideoPlayerParams.getInstance().myPrivateIps = priIps
-                    }
-                    addListener()
+    override fun addListener() {
+        binding.bottomNavigationView.setOnItemSelectedListener(NavigationBarView.OnItemSelectedListener {
+            when(it.itemId){
+                R.id.nav_video->{
+                    replaceFragment(VideoFragment())
                 }
-            } catch (e: Exception) {
-
-            } finally {
-                future.complete(true)
             }
+            return@OnItemSelectedListener true
         })
-
-        if (future.get()) {
-            LogUtil.d(TAG, "加载完成")
-        }
-
     }
-
-    fun addListener() {
-        //打开服务端
-        binding.openServeBtn.setOnClickListener {
-            VideoPlayerParams.getInstance().playerRole = Enums.PlayerRole.Server
-            startActivity(Intent(this, VideoActivity::class.java))
-        }
-        //打开客户端
-        binding.openClientBtn.setOnClickListener {
-            val intent = Intent(this, VideoActivity::class.java)
-            val serverIp = binding.ipEdit.text.toString()
-            if (serverIp.isNotEmpty() && VideoPlayerParams.getInstance().setServerIp(serverIp)) {
-                VideoPlayerParams.getInstance().playerRole = Enums.PlayerRole.Client
-                startActivity(intent)
-            } else {
-                ToastUtil.show(this, "请先输入有效的服务端IP")
-            }
-        }
+    private fun replaceFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(binding.homeFrameLayout.id, fragment)
+            .commit()
     }
-
 
     /**
      * A native method that is implemented by the 'eternalbonds' native library,

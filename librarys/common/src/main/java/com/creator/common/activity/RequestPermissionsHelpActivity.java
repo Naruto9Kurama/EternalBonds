@@ -1,4 +1,4 @@
-package com.creator.common;
+package com.creator.common.activity;
 
 import android.content.Context;
 import android.content.Intent;
@@ -9,7 +9,6 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.creator.common.utils.AppPermissionUtil;
@@ -22,7 +21,7 @@ import java.util.Random;
  * 动态请求权限帮助activity，与AppPermissionUtil联用。
  * 注：这个不是我们app的页面，所有不要轻易改动。
  */
-public class RequestPermissionsHelpActivity extends AppCompatActivity {
+public class RequestPermissionsHelpActivity extends BaseActivity {
 
     private int requestCode;
 
@@ -154,5 +153,15 @@ public class RequestPermissionsHelpActivity extends AppCompatActivity {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
         transferOnPermissionListener = listener;
+    }
+
+    @Override
+    public void init() {
+
+    }
+
+    @Override
+    public void addListener() {
+
     }
 }

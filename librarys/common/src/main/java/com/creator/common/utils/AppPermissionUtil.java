@@ -3,7 +3,7 @@ package com.creator.common.utils;
 import android.content.Context;
 import android.os.Build;
 
-import com.creator.common.RequestPermissionsHelpActivity;
+import com.creator.common.activity.RequestPermissionsHelpActivity;
 
 /**
  * 新版动态权限申请类
