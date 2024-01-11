@@ -5,11 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewbinding.ViewBinding
+import com.creator.common.utils.ReflectionUtil
 import com.creator.common.utils.ThemeModeUtil
 import java.lang.reflect.ParameterizedType
 
-abstract open class BaseActivity<VB : ViewBinding> : AppCompatActivity() {
-    lateinit var binding: VB
+abstract open class BaseActivity<T : ViewBinding> : AppCompatActivity() {
+    lateinit var binding: T
 
     val TAG = this.javaClass.simpleName
 
@@ -18,16 +19,15 @@ abstract open class BaseActivity<VB : ViewBinding> : AppCompatActivity() {
         // 启用沉浸式模式
         entryImmersiveMode()
         //利用反射，调用指定ViewBinding中的inflate方法填充视图
-        val type = javaClass.genericSuperclass
-        if (type is ParameterizedType) {
-            val clazz = type.actualTypeArguments[0] as Class<VB>
-            val method = clazz.getMethod("inflate", LayoutInflater::class.java)
-            binding = method.invoke(null, layoutInflater) as VB
+
+        kotlin.runCatching {
+            binding = ReflectionUtil.generateBinding(javaClass.genericSuperclass, layoutInflater)!!
             setContentView(binding.root)
         }
         init()
         addListener()
     }
+
     /**
      * 初始化组件
      */
@@ -49,7 +49,7 @@ abstract open class BaseActivity<VB : ViewBinding> : AppCompatActivity() {
         isImmersiveMode: Boolean,
         isHideNavigation: Boolean = true,
         isFullscreen: Boolean = true,
-        isLightStatusBar:Boolean =!ThemeModeUtil.isDarkMode(this),
+        isLightStatusBar: Boolean = !ThemeModeUtil.isDarkMode(this),
     ) {
         var i =
             if (isImmersiveMode) View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY else View.SYSTEM_UI_FLAG_VISIBLE
@@ -59,7 +59,7 @@ abstract open class BaseActivity<VB : ViewBinding> : AppCompatActivity() {
         if (isFullscreen) {
             i = i or View.SYSTEM_UI_FLAG_FULLSCREEN
         }
-        if (isLightStatusBar){
+        if (isLightStatusBar) {
             i = i or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
         }
         window.decorView.systemUiVisibility = i

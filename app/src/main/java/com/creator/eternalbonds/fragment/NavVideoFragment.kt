@@ -10,17 +10,17 @@ import com.creator.common.fragment.BaseFragment
 import com.creator.common.utils.ToastUtil
 import com.creator.eternalbonds.activity.VideoActivity
 import com.creator.eternalbonds.databinding.DialogClientInputBinding
-import com.creator.eternalbonds.databinding.FragmentVideoBinding
+import com.creator.eternalbonds.databinding.FragmentNavVideoBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 
 /**
  * A simple [Fragment] subclass.
- * Use the [VideoFragment.newInstance] factory method to
+ * Use the [NavVideoFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class VideoFragment : BaseFragment<FragmentVideoBinding>() {
-    override fun init() {
+class NavVideoFragment : BaseFragment<FragmentNavVideoBinding>() {
+    override fun initView() {
 
     }
 
@@ -66,7 +66,7 @@ class VideoFragment : BaseFragment<FragmentVideoBinding>() {
          */
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
-            VideoFragment().apply {
+            NavVideoFragment().apply {
                 arguments = Bundle().apply {
                 }
             }

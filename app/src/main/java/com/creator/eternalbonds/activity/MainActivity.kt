@@ -1,22 +1,19 @@
 package com.creator.eternalbonds.activity
 
-import android.content.Intent
 import androidx.fragment.app.Fragment
 import com.creator.common.activity.BaseActivity
 import com.creator.common.bean.VideoPlayerParams
-import com.creator.common.enums.Enums
 import com.creator.common.utils.IPUtil
-import com.creator.common.utils.ToastUtil
 import com.creator.eternalbonds.R
 import com.creator.eternalbonds.databinding.ActivityMainBinding
-import com.creator.eternalbonds.fragment.VideoFragment
+import com.creator.eternalbonds.fragment.NavVideoFragment
 import com.google.android.material.navigation.NavigationBarView
 
 
 class MainActivity : BaseActivity<ActivityMainBinding>() {
 
     override fun init() {
-        replaceFragment(VideoFragment())
+        replaceFragment(NavVideoFragment())
         //获取ip地址
         IPUtil.getIpAddress{allIps,pubIps,priIps->
             if (allIps.isNotEmpty()) {
@@ -36,7 +33,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         binding.bottomNavigationView.setOnItemSelectedListener(NavigationBarView.OnItemSelectedListener {
             when(it.itemId){
                 R.id.nav_video->{
-                    replaceFragment(VideoFragment())
+                    replaceFragment(NavVideoFragment())
                 }
             }
             return@OnItemSelectedListener true

@@ -4,11 +4,14 @@
         android:id="@+id/nav_video"
         android:icon="@drawable/nav_home"
         android:title="视频"/>
-    <item
+    <!--<item
         android:id="@+id/nav_ad"
         android:title="广告"/>
     <item
         android:id="@+id/nav_map"
         android:icon="@drawable/nav_map"
-        android:title="地图"/>
+        android:title="地图"/>-->
+    <item
+        android:id="@+id/nav_my"
+        android:title="我的"/>
 </menu>

@@ -6,11 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.viewbinding.ViewBinding
-import java.lang.reflect.ParameterizedType
+import com.creator.common.utils.ReflectionUtil
 
-abstract class BaseFragment<VB : ViewBinding> : Fragment() {
-    lateinit var binding: VB
-
+abstract class BaseFragment<T : ViewBinding> : Fragment() {
+    lateinit var binding: T
+    val TAG=this.javaClass.simpleName
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -19,14 +19,8 @@ abstract class BaseFragment<VB : ViewBinding> : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        //利用反射，调用指定ViewBinding中的inflate方法填充视图
-        val type = javaClass.genericSuperclass
-        if (type is ParameterizedType) {
-            val clazz = type.actualTypeArguments[0] as Class<VB>
-            val method = clazz.getMethod("inflate", LayoutInflater::class.java)
-            binding = method.invoke(null, layoutInflater) as VB
-        }
-        init()
+        binding = ReflectionUtil.generateBinding<T>(javaClass.genericSuperclass, layoutInflater)!!
+        initView()
         addListener()
         return binding.root
     }
@@ -34,7 +28,7 @@ abstract class BaseFragment<VB : ViewBinding> : Fragment() {
     /**
      * 初始化组件
      */
-    abstract fun init();
+    abstract fun initView();
 
     /**
      * 添加监听事件

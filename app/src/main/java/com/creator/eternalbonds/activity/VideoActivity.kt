@@ -1,10 +1,9 @@
 package com.creator.eternalbonds.activity
 
-import android.os.Bundle
 import android.view.ViewTreeObserver
 import com.creator.common.activity.BaseActivity
 import com.creator.eternalbonds.databinding.ActivityVideoBinding
-import com.creator.exoplayer.fragment.VideoPageFragment
+import com.creator.eternalbonds.fragment.VideoPageFragment
 
 class VideoActivity : BaseActivity<ActivityVideoBinding>()  {
 

@@ -17,8 +17,7 @@ import com.google.android.exoplayer2.Player.Listener
 
 
 class VideoPlayerFragment : BaseFragment<FragmentVideoPlayerBinding>() {
-    private val TAG = "VideoPlayerFragment"
-    override fun init() {
+    override fun initView() {
     }
 
     override fun addListener() {

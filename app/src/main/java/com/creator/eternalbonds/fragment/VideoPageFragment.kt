@@ -1,17 +1,15 @@
-package com.creator.exoplayer.fragment
+package com.creator.eternalbonds.fragment
 
 import android.Manifest
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.view.WindowManager.LayoutParams
 import android.widget.RadioButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
-import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.creator.common.activity.BaseActivity
 import com.creator.common.Constants
 import com.creator.common.bean.FileBean
@@ -23,7 +21,9 @@ import com.creator.common.utils.AppPermissionUtil
 import com.creator.common.utils.LogUtil
 import com.creator.common.utils.ScreenUtil
 import com.creator.common.utils.ToastUtil
-import com.creator.exoplayer.databinding.FragmentVideoPageBinding
+import com.creator.eternalbonds.adapter.IPAdapter
+import com.creator.eternalbonds.databinding.FragmentVideoPageBinding
+import com.creator.exoplayer.fragment.VideoPlayerFragment
 import com.creator.nanohttpd.server.VideoNanoHttpDServer
 import com.google.android.exoplayer2.Player
 import org.java_websocket.WebSocket
@@ -36,7 +36,6 @@ import java.net.URI
 
 class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
 
-    private val TAG = "VideoPageFragment"
     private lateinit var localFilesRadioButton: RadioButton
     private lateinit var httpRadioButton: RadioButton
     private lateinit var screenCastingRadioButton: RadioButton
@@ -62,7 +61,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
                 }
                 // 已准备好播放
                 Player.STATE_READY -> {
-
+                    binding.playInfoText.text=videoPlayerParams.currentVideoItemBean.ip
                 }
                 // 播放已结束
                 Player.STATE_ENDED -> {
@@ -96,7 +95,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
     /**
      * 初始化对象
      */
-     override fun init() {
+    override fun initView() {
         player = VideoPlayerFragment.newInstance()
         // 使用 FragmentManager 启动 Fragment
         childFragmentManager.beginTransaction().replace(binding.playerView.id, player).commit()
@@ -110,24 +109,45 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
         httpRadioButton = binding.httpRadioButton
         //投屏RadioButton
         screenCastingRadioButton = binding.screenCastingRadioButton
+
+        /*val chatAdapter = ChatAdapter(requireContext())
+        chatAdapter.chatItemBeans= arrayListOf(
+            ChatItemBean("asd","123", Date()),
+            ChatItemBean("222123","456", Date()),
+            ChatItemBean("safdsf","789", Date()),
+            ChatItemBean("safdsf","789", Date()),
+            ChatItemBean("safdsf","789", Date()),
+            ChatItemBean("safdsf","789", Date()),
+            ChatItemBean("safdsf","789", Date()),
+            ChatItemBean("safdsf","789", Date()),
+            ChatItemBean("safdsf","789", Date()),
+        )
+        binding.chatView.adapter = chatAdapter
+        binding.chatView.layoutManager=LinearLayoutManager(context)*/
+
         if (!isServer) {
             //客户端
-            binding.ipText.text = videoPlayerParams.serverIp
+//            binding.ipText.text = videoPlayerParams.serverIp
             binding.btnOpenDrawer.visibility = View.GONE
         } else {
-            var i = 1
+            val ipAdapter = IPAdapter(requireContext(),binding.ipTitleText)
+            binding.ipRecycler.adapter= ipAdapter
+            ipAdapter.pubIps=videoPlayerParams.myPublicIps
+            ipAdapter.priIps=videoPlayerParams.myPrivateIps
+            binding.ipRecycler.layoutManager=LinearLayoutManager(context)
+            /*var i = 1
             //服务端
-            if (videoPlayerParams.myPublicIps.size>0){
+            if (videoPlayerParams.myPublicIps.size > 0) {
                 binding.ipText.text = "  你的可用公网ip地址为:\n"
                 videoPlayerParams.myPublicIps.forEach {
                     binding.ipText.text =
                         binding.ipText.text.toString() + "  " + i++.toString() + ": " + it + "  \n"
                 }
-            }else{
+            } else {
                 binding.ipText.text = "  你没有可用的公网ip地址,无法在非同一网络下进行连接\n"
             }
 
-            if (videoPlayerParams.myPrivateIps.size>0){
+            if (videoPlayerParams.myPrivateIps.size > 0) {
                 binding.ipText.text =
                     binding.ipText.text.toString() + "  你的可用内网ip地址为:\n"
                 i = 1
@@ -135,10 +155,10 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
                     binding.ipText.text =
                         binding.ipText.text.toString() + "  " + i++.toString() + ": " + it + "  \n"
                 }
-            }else{
+            } else {
                 binding.ipText.text =
                     binding.ipText.text.toString() + "  你没有可用的内网ip地址\n"
-            }
+            }*/
         }
         addListener()
 
@@ -256,15 +276,18 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
     fun removePlayerListener() {
         player.removeListener(listener)
     }
+
     /**
      * 进入沉浸模式
      */
     fun entryImmersiveMode() {
         (activity as BaseActivity<*>).entryImmersiveMode()
     }
+
     fun entryFullscreen() {
         (activity as BaseActivity<*>).entryFullscreen()
     }
+
     fun addPlayerListener() {
         player.addListener(listener)
     }
