@@ -39,11 +39,7 @@ class IPAdapter(context: Context, val textView: TextView? = null) :
             }
 
             position >= pubIps.size -> {
-                if (pubIps.isNotEmpty()) {
                     priIps.toList()[position - pubIps.size-1]
-                } else {
-                    priIps.toList()[position - pubIps.size-2]
-                }
             }
 
             else -> ""

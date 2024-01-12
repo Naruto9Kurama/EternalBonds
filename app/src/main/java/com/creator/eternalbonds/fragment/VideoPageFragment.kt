@@ -9,12 +9,16 @@ import android.view.WindowManager.LayoutParams
 import android.widget.RadioButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.creator.common.activity.BaseActivity
 import com.creator.common.Constants
+import com.creator.common.MainThreadExecutor
 import com.creator.common.bean.FileBean
 import com.creator.common.bean.VideoItemBean
 import com.creator.common.bean.VideoPlayerParams
+import com.creator.common.bean.WebSocketMessageBean
 import com.creator.common.enums.Enums
 import com.creator.common.fragment.BaseFragment
 import com.creator.common.utils.AppPermissionUtil
@@ -54,14 +58,22 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
             super.onPlayerStateChanged(playWhenReady, playbackState)
             videoPlayerParams.currentVideoItemBean.playerState = playbackState
-            myWebSocket?.send()
+//            myWebSocket?.send()
             when (playbackState) {
                 // 处于缓冲状态
                 Player.STATE_BUFFERING -> {
                 }
                 // 已准备好播放
                 Player.STATE_READY -> {
-                    binding.playInfoText.text=videoPlayerParams.currentVideoItemBean.ip
+                    binding.playInfoText.text = videoPlayerParams.currentVideoItemBean.ip
+//                    if (videoPlayerParams.playerRole==Enums.PlayerRole.Client)
+//                        myWebSocket?.send(Enums.MessageType.IS_READY,"true")
+                    // 播放器已准备好
+                    if (playWhenReady) {
+                        // 播放中
+                    } else {
+                        // 暂停
+                    }
                 }
                 // 播放已结束
                 Player.STATE_ENDED -> {
@@ -91,14 +103,14 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
         }
     }
 
-
     /**
      * 初始化对象
      */
     override fun initView() {
-        player = VideoPlayerFragment.newInstance()
+        player = VideoPlayerFragment { addPlayerListener() }
         // 使用 FragmentManager 启动 Fragment
         childFragmentManager.beginTransaction().replace(binding.playerView.id, player).commit()
+
         //初始化websocket
         if (myWebSocket == null) {
             myWebSocket = MyWebSocket()
@@ -130,37 +142,12 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
 //            binding.ipText.text = videoPlayerParams.serverIp
             binding.btnOpenDrawer.visibility = View.GONE
         } else {
-            val ipAdapter = IPAdapter(requireContext(),binding.ipTitleText)
-            binding.ipRecycler.adapter= ipAdapter
-            ipAdapter.pubIps=videoPlayerParams.myPublicIps
-            ipAdapter.priIps=videoPlayerParams.myPrivateIps
-            binding.ipRecycler.layoutManager=LinearLayoutManager(context)
-            /*var i = 1
-            //服务端
-            if (videoPlayerParams.myPublicIps.size > 0) {
-                binding.ipText.text = "  你的可用公网ip地址为:\n"
-                videoPlayerParams.myPublicIps.forEach {
-                    binding.ipText.text =
-                        binding.ipText.text.toString() + "  " + i++.toString() + ": " + it + "  \n"
-                }
-            } else {
-                binding.ipText.text = "  你没有可用的公网ip地址,无法在非同一网络下进行连接\n"
-            }
-
-            if (videoPlayerParams.myPrivateIps.size > 0) {
-                binding.ipText.text =
-                    binding.ipText.text.toString() + "  你的可用内网ip地址为:\n"
-                i = 1
-                videoPlayerParams.myPrivateIps.forEach {
-                    binding.ipText.text =
-                        binding.ipText.text.toString() + "  " + i++.toString() + ": " + it + "  \n"
-                }
-            } else {
-                binding.ipText.text =
-                    binding.ipText.text.toString() + "  你没有可用的内网ip地址\n"
-            }*/
+            val ipAdapter = IPAdapter(requireContext(), binding.ipTitleText)
+            binding.ipRecycler.adapter = ipAdapter
+            ipAdapter.pubIps = videoPlayerParams.myPublicIps
+            ipAdapter.priIps = videoPlayerParams.myPrivateIps
+            binding.ipRecycler.layoutManager = LinearLayoutManager(context)
         }
-        addListener()
 
         screenCastingRadioButton.visibility = View.GONE
     }
@@ -204,9 +191,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
                 }
             }
 
-            startPlay() {
-                addPlayerListener()
-            }
+            startPlay()
 
         }
         //选择文件按钮
@@ -295,7 +280,6 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
     override fun onDestroy() {
         super.onDestroy()
 //        removePlayerListener()
-
     }
 
 
@@ -329,6 +313,12 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
 
     }
 
+    fun play() {
+        MainThreadExecutor.runOnUiThread {
+            player.play()
+        }
+    }
+
     /**
      * 开始播放
      */
@@ -336,7 +326,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
 //        if (videoPlayerParams.currentVideoItemBean.playerState==Player.STATE_READY){
         player.startPlay(videoPlayerParams.currentVideoUri, block)
         if (videoPlayerParams.currentVideoItemBean.currentPosition != null) {
-            player.seekTo(videoPlayerParams.currentVideoItemBean.currentPosition)
+            seekTo(videoPlayerParams.currentVideoItemBean.currentPosition)
         }
 //        }else{
 //            player.pause()
@@ -362,7 +352,8 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
 
     inner class MyWebSocket {
 
-        private var websockets = ArrayList<WebSocket>()
+        private var websockets = HashSet<WebSocket>()
+        private var isReadyMap = HashMap<WebSocket, Boolean>()
         private lateinit var exoPlayerWebSocketServer: ExoPlayerWebSocketServer
         private lateinit var exoPlayerWebSocketClient: ExoPlayerWebSocketClient
 
@@ -390,7 +381,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
 
             override fun onMessage(message: String?) {
                 LogUtil.d(TAG, message.toString())
-                updateVideo(message)
+                processMessages(message)
             }
 
             override fun onClose(code: Int, reason: String?, remote: Boolean) {
@@ -417,6 +408,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
             WebSocketServer(InetSocketAddress("::", port)) {
             override fun onOpen(conn: WebSocket, handshake: ClientHandshake?) {
                 websockets.add(conn)
+                isReadyMap[conn] = false;
                 send()
             }
 
@@ -433,7 +425,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
 
             override fun onMessage(conn: WebSocket?, message: String?) {
                 LogUtil.d(TAG, "onMessage:::$message")
-                updateVideo(message)
+                processMessages(message,conn)
             }
 
             override fun onError(conn: WebSocket?, ex: java.lang.Exception?) {
@@ -472,6 +464,31 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
             }
         }
 
+        fun processMessages(message: String?, conn: WebSocket? = null) {
+            val webSocketMessageBean = WebSocketMessageBean.toClass(message)
+            when (webSocketMessageBean.messageType) {
+                Enums.MessageType.IS_READY -> {
+                    isReadyMap[conn!!] = true
+                    var isReady = 0
+                    isReadyMap.forEach {
+                        if (it.value) isReady++
+                    }
+                    if (isReady == isReadyMap.size) {
+                        send(Enums.MessageType.START_PLAY, "")
+                        play()
+                    }
+                }
+
+                Enums.MessageType.Video -> {
+                    updateVideo(webSocketMessageBean.message)
+                }
+
+                Enums.MessageType.START_PLAY -> {
+                    play()
+                }
+            }
+        }
+
         /**
          * 通过websocket接收到的消息更新视频数据
          */
@@ -480,16 +497,24 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
             LogUtil.d(TAG, videoPlayerParams.toString())
             if (videoPlayerParams != null) {
                 startPlay()
+
             }
         }
 
         fun send(videoPlayerParams: VideoPlayerParams) {
+            send(Enums.MessageType.Video, videoPlayerParams.toString())
+        }
 
+        fun send(messageType: Enums.MessageType, message: String) {
+            send(WebSocketMessageBean(messageType, message))
+        }
+
+        fun send(webSocketMessageBean: WebSocketMessageBean) {
             websockets.forEach { websocket ->
                 try {
-                    websocket.send(videoPlayerParams.toString())
+                    websocket.send(webSocketMessageBean.toString())
                 } catch (e: Exception) {
-                    LogUtil.e(TAG, "send失败：${videoPlayerParams.toString()}\n" + e.message, e)
+                    LogUtil.e(TAG, "send失败：${webSocketMessageBean.toString()}\n" + e.message, e)
                 }
             }
         }

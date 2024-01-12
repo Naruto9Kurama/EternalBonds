@@ -139,6 +139,7 @@ public class VideoPlayerParams {
         videoPlayerParams.myPublicIps = this.videoPlayerParams.myPublicIps;
         videoPlayerParams.myPrivateIps = this.videoPlayerParams.myPrivateIps;
         videoPlayerParams.serverIp = this.videoPlayerParams.serverIp;
+        videoPlayerParams.playerRole = this.videoPlayerParams.playerRole;
         this.videoPlayerParams = videoPlayerParams;
         return this.videoPlayerParams;
     }

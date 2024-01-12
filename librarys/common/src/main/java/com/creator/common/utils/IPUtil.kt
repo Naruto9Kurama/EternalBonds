@@ -340,7 +340,7 @@ object IPUtil {
             socket.close()
             true
         } catch (e: Exception) {
-            LogUtil.d(TAG, "网络不可达")
+            LogUtil.e(TAG, "网络不可达:::${e.message}",e)
             false
         }
     }

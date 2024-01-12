@@ -16,28 +16,36 @@ import com.creator.nanohttpd.server.VideoNanoHttpDServer
 import com.google.android.exoplayer2.Player.Listener
 
 
-class VideoPlayerFragment : BaseFragment<FragmentVideoPlayerBinding>() {
+class VideoPlayerFragment(var block: (() -> Unit)?=null) : BaseFragment<FragmentVideoPlayerBinding>() {
+
+
     override fun initView() {
+        binding.playerView.player = ExoPlayerSingleton.getExoPlayer(requireContext())
     }
 
     override fun addListener() {
     }
+
     fun getCurrentPosition(): Long {
         return ExoPlayerSingleton.getCurrentPosition()
     }
 
     fun startPlay(uri: String, block: (() -> Unit)? = null) {
         MainThreadExecutor.runOnUiThread {
-            if (binding.playerView.player == null) {
-                binding.playerView.player = ExoPlayerSingleton.getExoPlayer(requireContext())
-            }
-            ExoPlayerSingleton.setSource(uri, requireContext(), true)
-            ExoPlayerSingleton.play()
+            ExoPlayerSingleton.setSource(uri, requireContext(), false)
+//            ExoPlayerSingleton.play()
             block?.invoke()
         }
     }
 
+    fun play(){
+        ExoPlayerSingleton.play()
+    }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        block?.invoke()
+    }
 
     fun addListener(listener: Listener) {
         ExoPlayerSingleton.addListener(listener)
@@ -53,17 +61,6 @@ class VideoPlayerFragment : BaseFragment<FragmentVideoPlayerBinding>() {
 
     fun pause() {
         ExoPlayerSingleton.pause()
-    }
-
-    companion object {
-        @JvmStatic
-        fun newInstance() =
-            VideoPlayerFragment().apply {
-                arguments = Bundle().apply {
-                    //接受传递的参数
-                }
-            }
-
     }
 
 

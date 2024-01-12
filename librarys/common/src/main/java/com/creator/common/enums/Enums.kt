@@ -24,5 +24,9 @@ object Enums {
         PingSuccess,PingFailed
     }
 
+    enum class MessageType{
+        Video,IS_READY,START_PLAY
+    }
+
 
 }

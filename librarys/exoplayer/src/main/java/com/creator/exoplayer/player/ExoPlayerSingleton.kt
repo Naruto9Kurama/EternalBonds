@@ -16,7 +16,8 @@ import com.google.android.exoplayer2.util.Util
 object ExoPlayerSingleton {
     private const val TAG = "ExoPlayerSingleton"
     private lateinit var exoPlayer: ExoPlayer
-    fun getExoPlayer(context: Context, ): ExoPlayer {
+    var currentUri = ""
+    fun getExoPlayer(context: Context): ExoPlayer {
         Log.setLogLevel(Log.LOG_LEVEL_ALL)
         exoPlayer = ExoPlayer.Builder(context).build();
         return exoPlayer
@@ -25,10 +26,12 @@ object ExoPlayerSingleton {
     fun getCurrentPosition(): Long {
         return exoPlayer.currentPosition
     }
-    fun addListener(listener: Listener){
+
+    fun addListener(listener: Listener) {
         exoPlayer.addListener(listener);
     }
-    fun removeListener(listener: Listener){
+
+    fun removeListener(listener: Listener) {
         exoPlayer.removeListener(listener);
     }
 
@@ -36,28 +39,33 @@ object ExoPlayerSingleton {
      * 设置播放源
      */
     fun setSource(uri: String, context: Context, isPlayWhenReady: Boolean = false) {
-        exoPlayer.clearMediaItems()
-        // 创建一个MediaItem对象，表示要播放的媒体文件
-        val mediaItem = MediaItem.fromUri(uri)
-        // 设置数据源工厂
-        val dataSourceFactory = DefaultDataSourceFactory(
-            context,
-            Util.getUserAgent(context, "com.creator.eternalbonds")
-        )
-        // 创建一个ProgressiveMediaSource，用于播放常规的媒体文件（例如MP4）
-        val mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
-            .createMediaSource(mediaItem)
-        // 设置要播放的媒体项到ExoPlayer
-        exoPlayer.setMediaItem(mediaItem)
-        // 设置媒体源工厂到ExoPlayer
-        exoPlayer.setMediaSource(mediaSource)
-        // 准备播放
-        exoPlayer.prepare()
-        if (isPlayWhenReady) exoPlayer.playWhenReady = true
+        if (uri != currentUri) {
+            exoPlayer.clearMediaItems()
+            // 创建一个MediaItem对象，表示要播放的媒体文件
+            val mediaItem = MediaItem.fromUri(uri)
+            // 设置数据源工厂
+            val dataSourceFactory = DefaultDataSourceFactory(
+                context,
+                Util.getUserAgent(context, "com.creator.eternalbonds")
+            )
+            // 创建一个ProgressiveMediaSource，用于播放常规的媒体文件（例如MP4）
+            val mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
+                .createMediaSource(mediaItem)
+            // 设置要播放的媒体项到ExoPlayer
+            exoPlayer.setMediaItem(mediaItem)
+            // 设置媒体源工厂到ExoPlayer
+            exoPlayer.setMediaSource(mediaSource)
+            // 准备播放
+            exoPlayer.prepare()
+            if (isPlayWhenReady) exoPlayer.playWhenReady = true
+        }
+        currentUri = uri
     }
 
     fun play() {
-        exoPlayer.play()
+        if (!exoPlayer.isPlaying){
+            exoPlayer.play()
+        }
     }
 
     fun seekTo(l: Long) {
@@ -67,7 +75,7 @@ object ExoPlayerSingleton {
         }
     }
 
-    fun pause(){
+    fun pause() {
         exoPlayer.pause()
     }
 
