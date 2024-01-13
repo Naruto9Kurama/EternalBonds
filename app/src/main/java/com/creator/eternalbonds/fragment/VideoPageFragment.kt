@@ -85,7 +85,6 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
                 }
 
             }
-
         }
 
         //进度条变化监听

@@ -58,7 +58,6 @@ class IPAdapter(context: Context, val textView: TextView? = null) :
                 clipboard.text = ip
                 ToastUtil.show(context, "复制成功:\n$ip")
             }
-
             true
         }
 
