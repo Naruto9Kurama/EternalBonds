@@ -1,5 +1,6 @@
 package com.creator.eternalbonds.fragment
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -9,6 +10,7 @@ import com.creator.common.fragment.BaseFragment
 import com.creator.eternalbonds.R
 import com.creator.eternalbonds.databinding.FragmentNavVideoBinding
 import com.creator.eternalbonds.databinding.FragmentRemoteControllerBinding
+import com.creator.remote_controller.activity.RemoteControllerActivity
 
 /**
  * A simple [Fragment] subclass.
@@ -23,6 +25,11 @@ class RemoteControllerFragment : BaseFragment<FragmentRemoteControllerBinding>()
     }
 
     override fun addListener() {
+        binding.serverBtn.setOnClickListener {
+            startActivity(Intent(context,RemoteControllerActivity::class.java))
+        }
     }
+
+
 
 }

@@ -78,4 +78,5 @@ dependencies {
     implementation(project(":librarys:common"))
     implementation(project(":librarys:websocket"))
     implementation(project(":librarys:nanohttpd"))
+    implementation(project(":librarys:remote_controller"))
 }
