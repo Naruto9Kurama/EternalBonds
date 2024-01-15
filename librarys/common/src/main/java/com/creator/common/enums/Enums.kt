@@ -5,6 +5,10 @@ object Enums {
         Client, Server
     }
 
+    enum class RemoteRole{
+        Client, Server
+    }
+
     enum class FileRequestCode{
         VIDEO,PHOTO
     }

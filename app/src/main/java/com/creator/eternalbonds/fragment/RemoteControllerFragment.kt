@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.creator.common.enums.Enums
 import com.creator.common.fragment.BaseFragment
 import com.creator.eternalbonds.R
 import com.creator.eternalbonds.databinding.FragmentNavVideoBinding
@@ -26,8 +27,19 @@ class RemoteControllerFragment : BaseFragment<FragmentRemoteControllerBinding>()
 
     override fun addListener() {
         binding.serverBtn.setOnClickListener {
-            startActivity(Intent(context,RemoteControllerActivity::class.java))
+            val intent = Intent(context, RemoteControllerActivity::class.java)
+            intent.putExtra("remoteRole", Enums.RemoteRole.Server)
+            startActivity(intent)
         }
+
+
+        binding.clientBtn.setOnClickListener {
+            val intent = Intent(context, RemoteControllerActivity::class.java)
+            intent.putExtra("remoteRole", Enums.RemoteRole.Client.name)
+            intent.putExtra("uri", "")
+            startActivity(intent)
+        }
+
     }
 
 
