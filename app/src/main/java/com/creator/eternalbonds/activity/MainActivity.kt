@@ -7,6 +7,7 @@ import com.creator.common.utils.IPUtil
 import com.creator.eternalbonds.R
 import com.creator.eternalbonds.databinding.ActivityMainBinding
 import com.creator.eternalbonds.fragment.NavVideoFragment
+import com.creator.eternalbonds.fragment.RemoteControllerFragment
 import com.google.android.material.navigation.NavigationBarView
 
 
@@ -34,6 +35,9 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
             when(it.itemId){
                 R.id.nav_video->{
                     replaceFragment(NavVideoFragment())
+                }
+                R.id.nav_remote_controller->{
+                    replaceFragment(RemoteControllerFragment())
                 }
             }
             return@OnItemSelectedListener true
