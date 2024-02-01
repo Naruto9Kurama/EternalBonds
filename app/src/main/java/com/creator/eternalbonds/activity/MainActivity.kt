@@ -4,6 +4,8 @@ import androidx.fragment.app.Fragment
 import com.creator.common.activity.BaseActivity
 import com.creator.common.bean.VideoPlayerParams
 import com.creator.common.utils.IPUtil
+import com.creator.common.utils.LogUtil
+import com.creator.common.utils.NetworkUtils
 import com.creator.eternalbonds.R
 import com.creator.eternalbonds.databinding.ActivityMainBinding
 import com.creator.eternalbonds.fragment.NavVideoFragment
@@ -27,6 +29,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 VideoPlayerParams.getInstance().myPrivateIps = priIps
             }
         }
+        LogUtil.d(TAG,NetworkUtils.isNetworkAvailable(this).toString())
 
     }
 
