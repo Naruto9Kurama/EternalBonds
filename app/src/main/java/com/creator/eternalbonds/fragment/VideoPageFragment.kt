@@ -4,21 +4,20 @@ import android.Manifest
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager.LayoutParams
 import android.widget.RadioButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
+import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.creator.common.activity.BaseActivity
 import com.creator.common.Constants
 import com.creator.common.MainThreadExecutor
 import com.creator.common.bean.FileBean
-import com.creator.common.bean.VideoItemBean
-import com.creator.common.bean.VideoPlayerParams
 import com.creator.common.bean.WebSocketMessageBean
+import com.creator.common.bean.player.VideoPlayerDataBean
 import com.creator.common.enums.Enums
 import com.creator.common.fragment.BaseFragment
 import com.creator.common.utils.AppPermissionUtil
@@ -27,9 +26,8 @@ import com.creator.common.utils.ScreenUtil
 import com.creator.common.utils.ToastUtil
 import com.creator.eternalbonds.adapter.IPAdapter
 import com.creator.eternalbonds.databinding.FragmentVideoPageBinding
-import com.creator.exoplayer.fragment.VideoPlayerFragment
+import com.creator.eternalbonds.listener.PlayerListener
 import com.creator.nanohttpd.server.VideoNanoHttpDServer
-import com.google.android.exoplayer2.Player
 import org.java_websocket.WebSocket
 import org.java_websocket.handshake.ClientHandshake
 import org.java_websocket.handshake.ServerHandshake
@@ -37,104 +35,52 @@ import org.java_websocket.server.WebSocketServer
 import java.net.InetSocketAddress
 import java.net.URI
 
-
+@UnstableApi
 class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
 
-    private lateinit var localFilesRadioButton: RadioButton
-    private lateinit var httpRadioButton: RadioButton
-    private lateinit var screenCastingRadioButton: RadioButton
     private var localFileUri: String? = null
-    private var videoPlayerParams: VideoPlayerParams = VideoPlayerParams.getInstance()
-    lateinit var player: VideoPlayerFragment
+    lateinit var playerFragment: VideoPlayerFragment
     var videoNanoHttpDServer: VideoNanoHttpDServer? = null
 
-    private val isServer = videoPlayerParams.playerRole == Enums.PlayerRole.Server
 
     private var isSeekTo = false
 
+
+    /*---------new-----------------*/
+    private lateinit var videoServer: Enums.PlayerRole//播放器角色
+    private lateinit var videoPlayerDataBean: VideoPlayerDataBean//播放器数据
+    private var isServer: Boolean = false//播放器是否是服务端
+    private var fileBean: FileBean? = null//选择的文件
+
     //监听事件
-    val listener = object : Player.Listener {
-        //播放状态变化监听
-        override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-            super.onPlayerStateChanged(playWhenReady, playbackState)
-            videoPlayerParams.currentVideoItemBean.playerState = playbackState
-//            myWebSocket?.send()
-            when (playbackState) {
-                // 处于缓冲状态
-                Player.STATE_BUFFERING -> {
-                }
-                // 已准备好播放
-                Player.STATE_READY -> {
-                    binding.playInfoText.text = videoPlayerParams.currentVideoItemBean.ip
-//                    if (videoPlayerParams.playerRole==Enums.PlayerRole.Client)
-//                        myWebSocket?.send(Enums.MessageType.IS_READY,"true")
-                    // 播放器已准备好
-                    if (playWhenReady) {
-                        // 播放中
-                    } else {
-                        // 暂停
-                    }
-                }
-                // 播放已结束
-                Player.STATE_ENDED -> {
-
-                }
-                // 播放器处于空闲状态
-                Player.STATE_IDLE -> {
-
-                }
-
-            }
+    val listener = PlayerListener()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        //获取数据
+        savedInstanceState?.let {
+            //获取播放器角色信息
+            videoServer = Enums.PlayerRole.valueOf(it.getString(Constants.Key.Video.VideoServer)!!)
+            isServer = videoServer == Enums.PlayerRole.Server
         }
 
-        //进度条变化监听
-        override fun onPositionDiscontinuity(reason: Int) {
-            super.onPositionDiscontinuity(reason)
-            LogUtil.d(TAG, "进度条变化")
-            if (!isSeekTo) {
-                val currentPosition = player.getCurrentPosition()
-                videoPlayerParams.currentVideoItemBean.currentPosition = currentPosition
-                LogUtil.d(TAG, "当前时间:::$currentPosition")
-                //发送当前变更位置
-                myWebSocket?.send()
-            }
-            isSeekTo = false
-        }
     }
 
     /**
      * 初始化对象
      */
-    override fun initView() {
-        player = VideoPlayerFragment { addPlayerListener() }
+    override fun initView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ) {
+        playerFragment = VideoPlayerFragment()
         // 使用 FragmentManager 启动 Fragment
-        childFragmentManager.beginTransaction().replace(binding.playerView.id, player).commit()
+        childFragmentManager.beginTransaction().replace(binding.playerView.id, playerFragment)
+            .commit()
 
         //初始化websocket
         if (myWebSocket == null) {
             myWebSocket = MyWebSocket()
         }
-        //本地文件RadioButton
-        localFilesRadioButton = binding.localFilesRadioButton
-        //Http RadioButton
-        httpRadioButton = binding.httpRadioButton
-        //投屏RadioButton
-        screenCastingRadioButton = binding.screenCastingRadioButton
-
-        /*val chatAdapter = ChatAdapter(requireContext())
-        chatAdapter.chatItemBeans= arrayListOf(
-            ChatItemBean("asd","123", Date()),
-            ChatItemBean("222123","456", Date()),
-            ChatItemBean("safdsf","789", Date()),
-            ChatItemBean("safdsf","789", Date()),
-            ChatItemBean("safdsf","789", Date()),
-            ChatItemBean("safdsf","789", Date()),
-            ChatItemBean("safdsf","789", Date()),
-            ChatItemBean("safdsf","789", Date()),
-            ChatItemBean("safdsf","789", Date()),
-        )
-        binding.chatView.adapter = chatAdapter
-        binding.chatView.layoutManager=LinearLayoutManager(context)*/
 
         if (!isServer) {
             //客户端
@@ -143,25 +89,32 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
         } else {
             val ipAdapter = IPAdapter(requireContext(), binding.ipTitleText)
             binding.ipRecycler.adapter = ipAdapter
-            ipAdapter.pubIps = videoPlayerParams.myPublicIps
-            ipAdapter.priIps = videoPlayerParams.myPrivateIps
+            ipAdapter.pubIps = Constants.Data.Ip.pubIps
+            ipAdapter.priIps = Constants.Data.Ip.priIps
             binding.ipRecycler.layoutManager = LinearLayoutManager(context)
         }
 
-        screenCastingRadioButton.visibility = View.GONE
+        binding.screenCastingRadioButton.visibility = View.GONE
     }
 
-    override fun addListener() {
+    override fun addListener(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ) {
         //播放按钮
         binding.startPlayer.setOnClickListener {
-            val videoItemBean = VideoItemBean()
-            videoPlayerParams.videoItemBeanList.add(videoItemBean)
-            videoItemBean.ip = videoPlayerParams.myIp
+//            val videoItemBean = VideoItemBean()
+//            videoPlayerParams.videoItemBeanList.add(videoItemBean)
+//            videoItemBean.ip = videoPlayerParams.myIp
             when (binding.playbackRadioGroup.checkedRadioButtonId) {
-                localFilesRadioButton.id -> {
-                    if (localFileUri != null) {
-                        videoItemBean.setLocalUri(localFileUri)
+                //本地文件
+                binding.localFilesRadioButton.id -> {
+                    if (fileBean != null) {
+                        //创建视频列表
+                        val videoItemBean = com.creator.common.bean.player.VideoItemBean()
                         videoItemBean.playbackSource = Enums.PlaybackSource.LOCAL_FILES
+                        videoItemBean.setLocalUri(fileBean!!.realUriStr)
+                        videoPlayerDataBean.videoItemBeanList.add(videoItemBean)
                         startNano()
                     } else {
                         ToastUtil.show(context, "请先选择视频文件")
@@ -169,12 +122,12 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
                     }
 
                 }
-
-                httpRadioButton.id -> {
+                //http
+                binding.httpRadioButton.id -> {
                     val httpUri = binding.httpEditText.text.toString()
                     if (httpUri.isNotEmpty()) {
-                        videoItemBean.uri = httpUri
-                        videoItemBean.playbackSource = Enums.PlaybackSource.HTTP
+//                        videoItemBean.uri = httpUri
+//                        videoItemBean.playbackSource = Enums.PlaybackSource.HTTP
                         closeNano()
                     } else {
                         ToastUtil.show(context, "请先输入视频http地址")
@@ -183,7 +136,8 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
 
                 }
 
-                screenCastingRadioButton.id -> {
+                //投屏
+                binding.screenCastingRadioButton.id -> {
                 }
 
                 else -> {
@@ -240,6 +194,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
         }
     }
 
+
     /**
      * 设置播放器是否全屏
      */
@@ -257,34 +212,10 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
         binding.playerView.layoutParams = layoutParams
     }
 
-    fun removePlayerListener() {
-        player.removeListener(listener)
-    }
-
-    /**
-     * 进入沉浸模式
-     */
-    fun entryImmersiveMode() {
-        (activity as BaseActivity<*>).entryImmersiveMode()
-    }
-
-    fun entryFullscreen() {
-        (activity as BaseActivity<*>).entryFullscreen()
-    }
-
-    fun addPlayerListener() {
-        player.addListener(listener)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-//        removePlayerListener()
-    }
-
 
     fun seekTo(l: Long) {
         isSeekTo = true
-        player.seekTo(l)
+        playerFragment.exoPlayer.seekTo(l)
     }
 
     /**
@@ -293,13 +224,17 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
     fun startNano() {
         if (videoNanoHttpDServer == null) {
             videoNanoHttpDServer = VideoNanoHttpDServer(
-                uri = videoPlayerParams.currentVideoUri,
+                uri = videoPlayerDataBean.videoItemBeanList.get(videoPlayerDataBean.currentIndex).uri,
                 context = context
             )
             videoNanoHttpDServer?.start()
             ToastUtil.show(context, "NanoHttpD已启动")
         } else {
-            videoNanoHttpDServer?.setVideoUri(videoPlayerParams.currentVideoUri)
+            videoNanoHttpDServer?.setVideoUri(
+                videoPlayerDataBean.videoItemBeanList.get(
+                    videoPlayerDataBean.currentIndex
+                ).uri
+            )
         }
     }
 
@@ -314,7 +249,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
 
     fun play() {
         MainThreadExecutor.runOnUiThread {
-            player.play()
+            playerFragment.exoPlayer.play()
         }
     }
 
@@ -323,13 +258,18 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
      */
     fun startPlay(block: (() -> Unit)? = null) {
 //        if (videoPlayerParams.currentVideoItemBean.playerState==Player.STATE_READY){
-        player.startPlay(videoPlayerParams.currentVideoUri, block)
-        if (videoPlayerParams.currentVideoItemBean.currentPosition != null) {
-            seekTo(videoPlayerParams.currentVideoItemBean.currentPosition)
-        }
+//        playerFragment.startPlay(videoPlayerParams.currentVideoUri, block)
+//        if (videoPlayerParams.currentVideoItemBean.currentPosition != null) {
+//            seekTo(videoPlayerParams.currentVideoItemBean.currentPosition)
+//        }
 //        }else{
 //            player.pause()
 //        }
+
+        playerFragment.setMediaSource(
+            videoPlayerDataBean.videoItemBeanList[videoPlayerDataBean.currentIndex],
+            true
+        )
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -338,8 +278,10 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
             // 处理选择的视频文件
             val videoAddress = data?.data
             localFileUri = videoAddress.toString()
-            val fileBean = FileBean(context, localFileUri)
-            binding.chooseFilePathText.text = fileBean.fileName
+            fileBean = FileBean(context, localFileUri)
+            binding.chooseFilePathText.text = fileBean?.fileName
+
+
         }
     }
 
@@ -358,20 +300,16 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
 
         init {
             //根据播放器角色创建对应的websocket类
-            when (VideoPlayerParams.getInstance().playerRole) {
-                Enums.PlayerRole.Server -> {
-                    exoPlayerWebSocketServer = ExoPlayerWebSocketServer()
-                    exoPlayerWebSocketServer.start()
-                }
-
-                Enums.PlayerRole.Client -> {
-                    exoPlayerWebSocketClient = ExoPlayerWebSocketClient()
-                    exoPlayerWebSocketClient.connect()
-                }
+            if (isServer) {
+                exoPlayerWebSocketServer = ExoPlayerWebSocketServer()
+                exoPlayerWebSocketServer.start()
+            } else {
+                exoPlayerWebSocketClient = ExoPlayerWebSocketClient()
+                exoPlayerWebSocketClient.connect()
             }
         }
 
-        inner class ExoPlayerWebSocketClient constructor(uri: String = videoPlayerParams.webSocketServerIp) :
+        inner class ExoPlayerWebSocketClient constructor(uri: String = videoPlayerDataBean.serverIp) :
             org.java_websocket.client.WebSocketClient(URI(uri)) {
             override fun onOpen(handshakedata: ServerHandshake?) {
                 websockets.add(connection)
@@ -408,7 +346,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
             override fun onOpen(conn: WebSocket, handshake: ClientHandshake?) {
                 websockets.add(conn)
                 isReadyMap[conn] = false;
-                send()
+//                send()
             }
 
             override fun onClose(conn: WebSocket?, code: Int, reason: String?, remote: Boolean) {
@@ -424,7 +362,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
 
             override fun onMessage(conn: WebSocket?, message: String?) {
                 LogUtil.d(TAG, "onMessage:::$message")
-                processMessages(message,conn)
+                processMessages(message, conn)
             }
 
             override fun onError(conn: WebSocket?, ex: java.lang.Exception?) {
@@ -449,14 +387,12 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
         fun close() {
             kotlin.runCatching {
                 //根据播放器角色创建对应的websocket类
-                when (VideoPlayerParams.getInstance().playerRole) {
-                    Enums.PlayerRole.Server -> {
-                        exoPlayerWebSocketServer.stop()
-                    }
+                if (isServer) {
+                    exoPlayerWebSocketServer.stop()
 
-                    Enums.PlayerRole.Client -> {
-                        exoPlayerWebSocketClient.close()
-                    }
+                } else {
+                    exoPlayerWebSocketClient.close()
+
                 }
                 myWebSocket = null
                 ToastUtil.show(context, "已关闭websocket")
@@ -473,7 +409,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
                         if (it.value) isReady++
                     }
                     if (isReady == isReadyMap.size) {
-                        send(Enums.MessageType.START_PLAY, "")
+//                        send(Enums.MessageType.START_PLAY, "")
                         play()
                     }
                 }
@@ -492,15 +428,15 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
          * 通过websocket接收到的消息更新视频数据
          */
         fun updateVideo(message: String?) {
-            videoPlayerParams = VideoPlayerParams.getInstance().toClass(message)
-            LogUtil.d(TAG, videoPlayerParams.toString())
-            if (videoPlayerParams != null) {
-                startPlay()
-
-            }
+//            videoPlayerParams = VideoPlayerParams.getInstance().toClass(message)
+//            LogUtil.d(TAG, videoPlayerParams.toString())
+//            if (videoPlayerParams != null) {
+//                startPlay()
+//
+//            }
         }
 
-        fun send(videoPlayerParams: VideoPlayerParams) {
+        /*fun send(videoPlayerParams: VideoPlayerParams) {
             send(Enums.MessageType.Video, videoPlayerParams.toString())
         }
 
@@ -520,16 +456,17 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
 
         fun send() {
             send(videoPlayerParams)
-        }
+        }*/
     }
 
     companion object {
         private var myWebSocket: MyWebSocket? = null
 
         @JvmStatic
-        fun newInstance() =
+        fun newInstance(videoServer: Enums.PlayerRole) =
             VideoPageFragment().apply {
                 arguments = Bundle().apply {
+                    putString(Constants.Key.Video.VideoServer, videoServer.name)
                 }
             }
     }

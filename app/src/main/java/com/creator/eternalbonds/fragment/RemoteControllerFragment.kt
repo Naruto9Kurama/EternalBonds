@@ -21,11 +21,13 @@ import com.creator.remote_controller.activity.RemoteControllerActivity
 class RemoteControllerFragment : BaseFragment<FragmentRemoteControllerBinding>() {
 
 
-    override fun initView() {
+    override fun initView(inflater: LayoutInflater, container: ViewGroup?,
+                          savedInstanceState: Bundle?) {
 
     }
 
-    override fun addListener() {
+    override fun addListener(inflater: LayoutInflater, container: ViewGroup?,
+                             savedInstanceState: Bundle?) {
         binding.serverBtn.setOnClickListener {
             val intent = Intent(context, RemoteControllerActivity::class.java)
             intent.putExtra("remoteRole", Enums.RemoteRole.Server)

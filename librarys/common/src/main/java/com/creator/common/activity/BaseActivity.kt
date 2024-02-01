@@ -9,7 +9,7 @@ import com.creator.common.utils.ReflectionUtil
 import com.creator.common.utils.ThemeModeUtil
 import java.lang.reflect.ParameterizedType
 
-abstract open class BaseActivity<T : ViewBinding> : AppCompatActivity() {
+ open class BaseActivity<T : ViewBinding> : AppCompatActivity() {
     lateinit var binding: T
 
     val TAG = this.javaClass.simpleName
@@ -31,12 +31,12 @@ abstract open class BaseActivity<T : ViewBinding> : AppCompatActivity() {
     /**
      * 初始化组件
      */
-    abstract fun init();
+    open fun init(){}
 
     /**
      * 添加监听事件
      */
-    abstract fun addListener();
+    open fun addListener(){}
 
     /**
      * 沉浸模式

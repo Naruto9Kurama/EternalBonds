@@ -33,4 +33,12 @@ object Enums {
     }
 
 
+    /**
+     * websocket信息传输类型
+     */
+    enum class WebSocketMessageType{
+        Video
+    }
+
+
 }

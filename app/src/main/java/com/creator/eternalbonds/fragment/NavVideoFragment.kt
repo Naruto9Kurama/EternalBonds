@@ -3,7 +3,10 @@ package com.creator.eternalbonds.fragment
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.creator.common.Constants
 import com.creator.common.bean.VideoPlayerParams
 import com.creator.common.enums.Enums
 import com.creator.common.fragment.BaseFragment
@@ -20,15 +23,20 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
  * create an instance of this fragment.
  */
 class NavVideoFragment : BaseFragment<FragmentNavVideoBinding>() {
-    override fun initView() {
+    override fun initView(inflater: LayoutInflater, container: ViewGroup?,
+                          savedInstanceState: Bundle?) {
 
     }
 
-    override fun addListener() {
+    override fun addListener(inflater: LayoutInflater, container: ViewGroup?,
+                             savedInstanceState: Bundle?) {
         //打开服务端
         binding.openServeBtn.setOnClickListener {
-            VideoPlayerParams.getInstance().playerRole = Enums.PlayerRole.Server
-            context?.startActivity(Intent(context, VideoActivity::class.java))
+//            VideoPlayerParams.getInstance().playerRole = Enums.PlayerRole.Server
+            val intent = Intent(context, VideoActivity::class.java)
+            //传递角色
+            intent.putExtra(Constants.Key.Video.VideoServer,Enums.PlayerRole.Server.name)
+            context?.startActivity(intent)
         }
         //打开客户端
         binding.openClientBtn.setOnClickListener {

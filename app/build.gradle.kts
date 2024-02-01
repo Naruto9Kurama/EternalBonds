@@ -72,6 +72,7 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     implementation("com.google.code.gson:gson:2.10.1")
 
+
     /*--------------------------------------------------------------------*/
     implementation(project(":librarys"))
     implementation(project(":librarys:exoplayer"))

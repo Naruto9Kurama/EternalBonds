@@ -1,9 +1,29 @@
 package com.creator.common
 
 import com.creator.common.enums.Enums
+import com.creator.common.utils.IPUtil
 
 
 data object Constants {
+
+    object Data {
+        object Ip {
+            init {
+                IPUtil.getIpAddress { allIps, pubIps, priIps ->
+                    this.allIps=allIps
+                    this.priIps=priIps
+                    this.pubIps=pubIps
+                    myIp= pubIps.toList()[0]
+                }
+            }
+
+            lateinit var allIps:Set<String>//全部ip
+            lateinit var priIps:Set<String>//私有ip
+            lateinit var pubIps:Set<String>//公网ip
+            lateinit var myIp:String//我的ip 获取单个公网ip
+
+        }
+    }
 
     /**
      * WebSocket Constants
@@ -43,6 +63,12 @@ data object Constants {
         )
     }
 
+
+    object Key {
+        object Video {
+            const val VideoServer = "VideoServer"
+        }
+    }
 
 
 }

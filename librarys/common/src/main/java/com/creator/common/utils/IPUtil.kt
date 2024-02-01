@@ -53,7 +53,6 @@ object IPUtil {
             newFixedThreadPool.shutdown()
             LogUtil.d(TAG, System.currentTimeMillis().toString())
         }
-
         block?.invoke(allIps, ips, priIps)
 
     }
@@ -183,7 +182,7 @@ object IPUtil {
         }/${ip}/${count}/all"
         LogUtil.d(TAG, "请求的url: $url")
         val future = CompletableFuture<Boolean>()
-        Thread {
+        CoroutineUtils.runOnBackgroundThread {
             OkHttpClientUtil.asyncGet(url, object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     future.complete(false)
@@ -199,8 +198,7 @@ object IPUtil {
                     }
                 }
             })
-        }.start()
-
+        }
         return future.get()
     }
 
@@ -340,7 +338,7 @@ object IPUtil {
             socket.close()
             true
         } catch (e: Exception) {
-            LogUtil.e(TAG, "网络不可达:::${e.message}",e)
+            LogUtil.e(TAG, "网络不可达:::${e.message}", e)
             false
         }
     }
