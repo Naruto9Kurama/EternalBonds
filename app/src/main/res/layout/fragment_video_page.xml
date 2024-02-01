@@ -204,6 +204,11 @@
             </androidx.drawerlayout.widget.DrawerLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </HorizontalScrollView>
 
         <!--播放器下方区域-->
         <!--<androidx.constraintlayout.widget.ConstraintLayout
