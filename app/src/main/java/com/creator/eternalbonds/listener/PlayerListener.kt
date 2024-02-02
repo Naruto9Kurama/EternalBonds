@@ -40,6 +40,8 @@ class PlayerListener() : Player.Listener {
     override fun onPositionDiscontinuity(reason: Int) {
         super.onPositionDiscontinuity(reason)
         LogUtil.d(TAG, "进度条变化")
-
     }
+
+
+
 }

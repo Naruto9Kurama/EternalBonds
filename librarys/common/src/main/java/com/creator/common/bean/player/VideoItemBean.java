@@ -15,6 +15,8 @@ public class VideoItemBean extends BaseBean {
     private String ip;//视频归属哪个ip地址
 
 
+
+
     private Long currentPosition;//视频播放位置
     private int playerState;//播放状态 缓冲中:Player.STATE_BUFFERING 准备好播放:Player.STATE_READY 播放已结束:Player.STATE_ENDED 处于空闲状态:Player.STATE_IDLE
     private String localUri;//如果播放器角色是服务端，且播放源为本地文件，localUri存储为本地文件的路径
@@ -29,12 +31,12 @@ public class VideoItemBean extends BaseBean {
 
     public void setLocalUri(String localUri) {
         this.localUri = localUri;
-        this.uri = "http://" + VideoPlayerParams.getInstance().getMyIp() + ":" + Constants.NanoHttpd.PORT + "/video";
+        this.uri = "http://" + "ip" + ":" + Constants.NanoHttpd.PORT + "/video";
 //        this.uri = "http://" + VideoPlayerParams.getInstance().getMyIp() + ":" + Constants.NanoHttpd.PORT+"/video";
     }
 
     public Enums.PlayerRole getPlayerRole() {
-        if (VideoPlayerParams.getInstance().getMyIp().equals(ip)) {
+        if (Constants.Data.Ip.allIps.stream().anyMatch(i -> i.equals(ip))) {
             return Enums.PlayerRole.Server;
         } else {
             return Enums.PlayerRole.Client;
@@ -64,8 +66,8 @@ public class VideoItemBean extends BaseBean {
                 case Server:
                     return localUri;
                 case Client:
-                    String uri = "http://" + VideoPlayerParams.getInstance().getServerIp() + ":" + Constants.NanoHttpd.PORT+"/video";
-                    LogUtil.INSTANCE.d(TAG,uri,null);
+                    String uri = "http://" + VideoPlayerParams.getInstance().getServerIp() + ":" + Constants.NanoHttpd.PORT + "/video";
+                    LogUtil.INSTANCE.d(TAG, uri, null);
                     return uri;
             }
         }

@@ -18,7 +18,7 @@ import com.creator.common.fragment.BaseFragment
 import com.creator.eternalbonds.databinding.FragmentVideoPlayerBinding
 
  @OptIn(UnstableApi::class)
-class VideoPlayerFragment(var block: (() -> Unit)? = null) :
+class VideoPlayerFragment(val playerLoadProgress:PlayerLoadProgress?=null) :
     BaseFragment<FragmentVideoPlayerBinding>() {
 
      lateinit var exoPlayer: ExoPlayer
@@ -37,7 +37,7 @@ class VideoPlayerFragment(var block: (() -> Unit)? = null) :
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        block?.invoke()
+        playerLoadProgress?.onLoadingFinish()
     }
 
 
@@ -63,5 +63,12 @@ class VideoPlayerFragment(var block: (() -> Unit)? = null) :
     }
 
 
+
+     interface PlayerLoadProgress{
+         /**
+          * 播放器加载完成回调
+          */
+         fun onLoadingFinish();
+     }
 
 }

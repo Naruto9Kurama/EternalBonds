@@ -8,6 +8,9 @@ public class URIUtils {
 
 
     public static boolean isHttpUri(String uri) {
+        if (uri==null){
+            return false;
+        }
         return "http".startsWith(uri) || "https".startsWith(uri);
     }
 

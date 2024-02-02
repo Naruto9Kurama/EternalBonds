@@ -16,8 +16,6 @@ import java.net.SocketException
 import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
-import java.util.concurrent.Future
-import java.util.concurrent.TimeUnit
 import kotlin.experimental.and
 
 
@@ -25,7 +23,7 @@ object IPUtil {
 
     private const val TAG = "IPUtil"
     fun getIpAddress(block: ((allIps: Set<String>, pubIps: Set<String>, priIps: Set<String>) -> Unit)? = null) {
-        var ips = HashSet<String>()//公网ip
+        var pubIps = HashSet<String>()//公网ip
         var allIps = HashSet<String>()//全部ip
         var priIps = HashSet<String>()//私有ip
         //获取全部可用ip
@@ -36,7 +34,7 @@ object IPUtil {
             tasks.add(Callable {
                 allIps.add(it)
                 if (velocity(it)) {
-                    ips.add(it)
+                    pubIps.add(it)
                 } else {
                     priIps.add(it)
                 }
@@ -53,7 +51,7 @@ object IPUtil {
             newFixedThreadPool.shutdown()
             LogUtil.d(TAG, System.currentTimeMillis().toString())
         }
-        block?.invoke(allIps, ips, priIps)
+        block?.invoke(allIps, pubIps, priIps)
 
     }
 

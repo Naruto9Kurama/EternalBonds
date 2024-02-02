@@ -36,9 +36,8 @@ import java.net.InetSocketAddress
 import java.net.URI
 
 @UnstableApi
-class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
+class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>(),VideoPlayerFragment.PlayerLoadProgress {
 
-    private var localFileUri: String? = null
     lateinit var playerFragment: VideoPlayerFragment
     var videoNanoHttpDServer: VideoNanoHttpDServer? = null
 
@@ -48,16 +47,18 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
 
     /*---------new-----------------*/
     private lateinit var videoServer: Enums.PlayerRole//播放器角色
-    private lateinit var videoPlayerDataBean: VideoPlayerDataBean//播放器数据
+    private val videoPlayerDataBean: VideoPlayerDataBean = VideoPlayerDataBean()//播放器数据
     private var isServer: Boolean = false//播放器是否是服务端
     private var fileBean: FileBean? = null//选择的文件
+    private lateinit var myWebSocket: MyWebSocket
+    private var localFileUri: String? = null
 
     //监听事件
     val listener = PlayerListener()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //获取数据
-        savedInstanceState?.let {
+        arguments?.let {
             //获取播放器角色信息
             videoServer = Enums.PlayerRole.valueOf(it.getString(Constants.Key.Video.VideoServer)!!)
             isServer = videoServer == Enums.PlayerRole.Server
@@ -72,19 +73,14 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ) {
-        playerFragment = VideoPlayerFragment()
+        playerFragment = VideoPlayerFragment(this)
         // 使用 FragmentManager 启动 Fragment
         childFragmentManager.beginTransaction().replace(binding.playerView.id, playerFragment)
             .commit()
-
-        //初始化websocket
-        if (myWebSocket == null) {
-            myWebSocket = MyWebSocket()
-        }
+        myWebSocket = MyWebSocket()
 
         if (!isServer) {
             //客户端
-//            binding.ipText.text = videoPlayerParams.serverIp
             binding.btnOpenDrawer.visibility = View.GONE
         } else {
             val ipAdapter = IPAdapter(requireContext(), binding.ipTitleText)
@@ -103,24 +99,21 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
     ) {
         //播放按钮
         binding.startPlayer.setOnClickListener {
-//            val videoItemBean = VideoItemBean()
-//            videoPlayerParams.videoItemBeanList.add(videoItemBean)
-//            videoItemBean.ip = videoPlayerParams.myIp
             when (binding.playbackRadioGroup.checkedRadioButtonId) {
                 //本地文件
                 binding.localFilesRadioButton.id -> {
-                    if (fileBean != null) {
+                    if (localFileUri != null) {
                         //创建视频列表
                         val videoItemBean = com.creator.common.bean.player.VideoItemBean()
                         videoItemBean.playbackSource = Enums.PlaybackSource.LOCAL_FILES
-                        videoItemBean.setLocalUri(fileBean!!.realUriStr)
+                        videoItemBean.setLocalUri(localFileUri)
+                        videoItemBean.ip = Constants.Data.Ip.myIp
                         videoPlayerDataBean.videoItemBeanList.add(videoItemBean)
                         startNano()
                     } else {
                         ToastUtil.show(context, "请先选择视频文件")
                         return@setOnClickListener
                     }
-
                 }
                 //http
                 binding.httpRadioButton.id -> {
@@ -135,7 +128,6 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
                     }
 
                 }
-
                 //投屏
                 binding.screenCastingRadioButton.id -> {
                 }
@@ -175,42 +167,10 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
                 drawerLayout.openDrawer(GravityCompat.START)
             }
         }
+
+
     }
 
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        LogUtil.d(TAG, "onOrientationChanged:::$newConfig")
-        setPlayerFull(newConfig)
-    }
-
-    /**
-     * 判断是否需要设置播放器全屏
-     */
-    fun setPlayerFull(newConfig: Configuration) {
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            setFullScreen(true)
-        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            setFullScreen(false)
-        }
-    }
-
-
-    /**
-     * 设置播放器是否全屏
-     */
-    private fun setFullScreen(fullScreen: Boolean) {
-        val layoutParams = binding.playerView.layoutParams
-        if (fullScreen) {
-            layoutParams.height = LayoutParams.MATCH_PARENT
-
-            // 隐藏状态栏和导航栏，并启用沉浸式模式
-            entryFullscreen()
-        } else {
-            layoutParams.height = ScreenUtil.dip2px(context, 200f)
-            entryImmersiveMode()
-        }
-        binding.playerView.layoutParams = layoutParams
-    }
 
 
     fun seekTo(l: Long) {
@@ -257,21 +217,22 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
      * 开始播放
      */
     fun startPlay(block: (() -> Unit)? = null) {
-//        if (videoPlayerParams.currentVideoItemBean.playerState==Player.STATE_READY){
-//        playerFragment.startPlay(videoPlayerParams.currentVideoUri, block)
-//        if (videoPlayerParams.currentVideoItemBean.currentPosition != null) {
-//            seekTo(videoPlayerParams.currentVideoItemBean.currentPosition)
-//        }
-//        }else{
-//            player.pause()
-//        }
-
         playerFragment.setMediaSource(
             videoPlayerDataBean.videoItemBeanList[videoPlayerDataBean.currentIndex],
             true
         )
     }
 
+    /**
+     * 播放器视图加载完成回调
+     */
+    override fun onLoadingFinish() {
+        //添加播放器监听
+        playerFragment.exoPlayer.addListener(listener)
+    }
+    /**
+     * 选择文件回调方法
+     */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == Enums.FileRequestCode.VIDEO.ordinal && resultCode == AppCompatActivity.RESULT_OK) {
@@ -280,17 +241,23 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
             localFileUri = videoAddress.toString()
             fileBean = FileBean(context, localFileUri)
             binding.chooseFilePathText.text = fileBean?.fileName
-
-
         }
     }
 
+
     override fun onDestroyView() {
         super.onDestroyView()
-        myWebSocket?.close()
+        myWebSocket.close()
         closeNano()
     }
 
+    fun sendMessage( message:String){
+//        myWebSocket.
+    }
+
+    /**
+     * websocketk类
+     */
     inner class MyWebSocket {
 
         private var websockets = HashSet<WebSocket>()
@@ -332,7 +299,6 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
                     ToastUtil.show(context, "重新连接")
                     connect()
                 }
-
             }
 
             override fun onError(ex: java.lang.Exception?) {
@@ -394,7 +360,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
                     exoPlayerWebSocketClient.close()
 
                 }
-                myWebSocket = null
+//                myWebSocket = null
                 ToastUtil.show(context, "已关闭websocket")
             }
         }
@@ -459,8 +425,45 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
         }*/
     }
 
+
+    /**
+     * 配置更改回调
+     */
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        LogUtil.d(TAG, "onOrientationChanged:::$newConfig")
+        setPlayerFull(newConfig)//设置播放器全屏
+    }
+    /**
+     * 判断是否需要设置播放器全屏
+     */
+    fun setPlayerFull(newConfig: Configuration) {
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            setFullScreen(true)
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            setFullScreen(false)
+        }
+    }
+
+
+    /**
+     * 设置播放器是否全屏
+     */
+    private fun setFullScreen(fullScreen: Boolean) {
+        val layoutParams = binding.playerView.layoutParams
+        if (fullScreen) {
+            layoutParams.height = LayoutParams.MATCH_PARENT
+
+            // 隐藏状态栏和导航栏，并启用沉浸式模式
+            entryFullscreen()
+        } else {
+            layoutParams.height = ScreenUtil.dip2px(context, 200f)
+            entryImmersiveMode()
+        }
+        binding.playerView.layoutParams = layoutParams
+    }
+
     companion object {
-        private var myWebSocket: MyWebSocket? = null
 
         @JvmStatic
         fun newInstance(videoServer: Enums.PlayerRole) =
@@ -470,4 +473,5 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
                 }
             }
     }
+
 }

@@ -1,6 +1,7 @@
 package com.creator.eternalbonds.activity
 
 import androidx.fragment.app.Fragment
+import com.creator.common.Constants
 import com.creator.common.activity.BaseActivity
 import com.creator.common.bean.VideoPlayerParams
 import com.creator.common.utils.IPUtil
@@ -16,6 +17,7 @@ import com.google.android.material.navigation.NavigationBarView
 class MainActivity : BaseActivity<ActivityMainBinding>() {
 
     override fun init() {
+        Constants.Data.Ip
         replaceFragment(NavVideoFragment())
         //获取ip地址
         IPUtil.getIpAddress{allIps,pubIps,priIps->

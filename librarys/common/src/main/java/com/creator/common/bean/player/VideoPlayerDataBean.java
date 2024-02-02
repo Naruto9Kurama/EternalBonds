@@ -1,6 +1,8 @@
 package com.creator.common.bean.player;
 
 
+import com.creator.common.Constants;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +11,7 @@ import java.util.List;
  */
 public class VideoPlayerDataBean {
 
-    private String serverIp;
+    private String serverIp= Constants.Data.Ip.myIp;
     private List<VideoItemBean> videoItemBeanList=new ArrayList<>();//视频列表
     private int currentIndex;//当前播放列表位置下标
 
