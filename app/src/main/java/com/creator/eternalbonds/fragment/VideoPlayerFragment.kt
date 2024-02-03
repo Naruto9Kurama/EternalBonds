@@ -16,12 +16,18 @@ import com.creator.common.bean.player.VideoItemBean
 import com.creator.common.bean.player.VideoPlayerDataBean
 import com.creator.common.fragment.BaseFragment
 import com.creator.eternalbonds.databinding.FragmentVideoPlayerBinding
+import com.creator.exoplayer.utils.ExoPlayerController
 
+
+ /**
+  * 播放器页面
+  */
  @OptIn(UnstableApi::class)
 class VideoPlayerFragment(val playerLoadProgress:PlayerLoadProgress?=null) :
     BaseFragment<FragmentVideoPlayerBinding>() {
 
      lateinit var exoPlayer: ExoPlayer
+     lateinit var  exoPlayerController: ExoPlayerController
 
 
     override fun initView(
@@ -29,7 +35,8 @@ class VideoPlayerFragment(val playerLoadProgress:PlayerLoadProgress?=null) :
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ) {
-        exoPlayer = ExoPlayer.Builder(requireContext()).build()
+        exoPlayerController = ExoPlayerController(requireContext())
+        exoPlayer = exoPlayerController.getExoPlayer()
         binding.playerView.player = exoPlayer
     }
 

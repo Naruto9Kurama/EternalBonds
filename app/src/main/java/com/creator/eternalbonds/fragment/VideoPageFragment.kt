@@ -27,6 +27,7 @@ import com.creator.common.utils.ToastUtil
 import com.creator.eternalbonds.adapter.IPAdapter
 import com.creator.eternalbonds.databinding.FragmentVideoPageBinding
 import com.creator.eternalbonds.listener.PlayerListener
+import com.creator.exoplayer.utils.ExoPlayerController
 import com.creator.nanohttpd.server.VideoNanoHttpDServer
 import org.java_websocket.WebSocket
 import org.java_websocket.handshake.ClientHandshake
@@ -35,6 +36,10 @@ import org.java_websocket.server.WebSocketServer
 import java.net.InetSocketAddress
 import java.net.URI
 
+
+/**
+ * 视频页面
+ */
 @UnstableApi
 class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>(),VideoPlayerFragment.PlayerLoadProgress {
 
@@ -52,9 +57,10 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>(),VideoPlayerFr
     private var fileBean: FileBean? = null//选择的文件
     private lateinit var myWebSocket: MyWebSocket
     private var localFileUri: String? = null
+    private lateinit var playerController:ExoPlayerController//播放器
 
     //监听事件
-    val listener = PlayerListener()
+    lateinit var listener :PlayerListener
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //获取数据
@@ -74,6 +80,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>(),VideoPlayerFr
         savedInstanceState: Bundle?
     ) {
         playerFragment = VideoPlayerFragment(this)
+        playerController=playerFragment.exoPlayerController
         // 使用 FragmentManager 启动 Fragment
         childFragmentManager.beginTransaction().replace(binding.playerView.id, playerFragment)
             .commit()
@@ -136,7 +143,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>(),VideoPlayerFr
                 }
             }
 
-            startPlay()
+           playerController.startPlay()
 
         }
         //选择文件按钮
@@ -173,10 +180,6 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>(),VideoPlayerFr
 
 
 
-    fun seekTo(l: Long) {
-        isSeekTo = true
-        playerFragment.exoPlayer.seekTo(l)
-    }
 
     /**
      * 开启Nano
@@ -207,27 +210,13 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>(),VideoPlayerFr
 
     }
 
-    fun play() {
-        MainThreadExecutor.runOnUiThread {
-            playerFragment.exoPlayer.play()
-        }
-    }
-
-    /**
-     * 开始播放
-     */
-    fun startPlay(block: (() -> Unit)? = null) {
-        playerFragment.setMediaSource(
-            videoPlayerDataBean.videoItemBeanList[videoPlayerDataBean.currentIndex],
-            true
-        )
-    }
 
     /**
      * 播放器视图加载完成回调
      */
     override fun onLoadingFinish() {
         //添加播放器监听
+        listener= PlayerListener(playerController)
         playerFragment.exoPlayer.addListener(listener)
     }
     /**
@@ -376,7 +365,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>(),VideoPlayerFr
                     }
                     if (isReady == isReadyMap.size) {
 //                        send(Enums.MessageType.START_PLAY, "")
-                        play()
+                        playerController.startPlay()
                     }
                 }
 
@@ -385,7 +374,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>(),VideoPlayerFr
                 }
 
                 Enums.MessageType.START_PLAY -> {
-                    play()
+                    playerController.startPlay()
                 }
             }
         }
