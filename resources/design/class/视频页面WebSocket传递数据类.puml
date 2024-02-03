@@ -1,0 +1,24 @@
+@startuml
+VideoPlayerDataBean <|-- VideoItemBean
+
+
+/'webSocket消息'/
+class WebSocketMessage{
+        T
+}
+
+/'视频列表数据类'/
+class VideoPlayerDataBean{
+
+   - List<VideoItemBean>
+
+}
+
+/'单个视频类'/
+class VideoItemBean{
+
+}
+
+
+
+@enduml
