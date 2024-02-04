@@ -8,15 +8,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager.LayoutParams
-import android.widget.RadioButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.creator.common.Constants
-import com.creator.common.MainThreadExecutor
 import com.creator.common.bean.FileBean
-import com.creator.common.bean.WebSocketMessageBean
 import com.creator.common.bean.player.VideoPlayerDataBean
 import com.creator.common.enums.Enums
 import com.creator.common.fragment.BaseFragment
@@ -29,25 +26,18 @@ import com.creator.eternalbonds.databinding.FragmentVideoPageBinding
 import com.creator.eternalbonds.listener.PlayerListener
 import com.creator.exoplayer.utils.ExoPlayerController
 import com.creator.nanohttpd.server.VideoNanoHttpDServer
-import org.java_websocket.WebSocket
-import org.java_websocket.handshake.ClientHandshake
-import org.java_websocket.handshake.ServerHandshake
-import org.java_websocket.server.WebSocketServer
-import java.net.InetSocketAddress
-import java.net.URI
+import com.creator.websocket.VideoWebSocket
 
 
 /**
  * 视频页面
  */
 @UnstableApi
-class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>(),VideoPlayerFragment.PlayerLoadProgress {
+class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>(),
+    VideoPlayerFragment.PlayerLoadProgress {
 
     lateinit var playerFragment: VideoPlayerFragment
     var videoNanoHttpDServer: VideoNanoHttpDServer? = null
-
-
-    private var isSeekTo = false
 
 
     /*---------new-----------------*/
@@ -55,12 +45,12 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>(),VideoPlayerFr
     private val videoPlayerDataBean: VideoPlayerDataBean = VideoPlayerDataBean()//播放器数据
     private var isServer: Boolean = false//播放器是否是服务端
     private var fileBean: FileBean? = null//选择的文件
-    private lateinit var myWebSocket: MyWebSocket
+    private lateinit var webSocket: VideoWebSocket
     private var localFileUri: String? = null
-    private lateinit var playerController:ExoPlayerController//播放器
+    private lateinit var playerController: ExoPlayerController//播放器
 
     //监听事件
-    lateinit var listener :PlayerListener
+    lateinit var listener: PlayerListener
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //获取数据
@@ -69,7 +59,6 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>(),VideoPlayerFr
             videoServer = Enums.PlayerRole.valueOf(it.getString(Constants.Key.Video.VideoServer)!!)
             isServer = videoServer == Enums.PlayerRole.Server
         }
-
     }
 
     /**
@@ -80,11 +69,9 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>(),VideoPlayerFr
         savedInstanceState: Bundle?
     ) {
         playerFragment = VideoPlayerFragment(this)
-        playerController=playerFragment.exoPlayerController
         // 使用 FragmentManager 启动 Fragment
-        childFragmentManager.beginTransaction().replace(binding.playerView.id, playerFragment)
-            .commit()
-        myWebSocket = MyWebSocket()
+        childFragmentManager.beginTransaction().replace(binding.playerView.id, playerFragment).commit()
+        webSocket = VideoWebSocket(requireContext(),isServer,videoPlayerDataBean)
 
         if (!isServer) {
             //客户端
@@ -142,8 +129,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>(),VideoPlayerFr
                 else -> {
                 }
             }
-
-           playerController.startPlay()
+            startPlay(videoPlayerDataBean.videoItemBeanList[videoPlayerDataBean.currentIndex].uri)
 
         }
         //选择文件按钮
@@ -178,7 +164,9 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>(),VideoPlayerFr
 
     }
 
-
+    fun startPlay(uri: String) {
+        playerController.setMediaSource(uri, true)
+    }
 
 
     /**
@@ -194,9 +182,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>(),VideoPlayerFr
             ToastUtil.show(context, "NanoHttpD已启动")
         } else {
             videoNanoHttpDServer?.setVideoUri(
-                videoPlayerDataBean.videoItemBeanList.get(
-                    videoPlayerDataBean.currentIndex
-                ).uri
+                videoPlayerDataBean.videoItemBeanList[videoPlayerDataBean.currentIndex].uri
             )
         }
     }
@@ -216,9 +202,11 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>(),VideoPlayerFr
      */
     override fun onLoadingFinish() {
         //添加播放器监听
-        listener= PlayerListener(playerController)
+        playerController = playerFragment.exoPlayerController
+        listener = PlayerListener(playerController,videoPlayerDataBean,webSocket)
         playerFragment.exoPlayer.addListener(listener)
     }
+
     /**
      * 选择文件回调方法
      */
@@ -236,182 +224,8 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>(),VideoPlayerFr
 
     override fun onDestroyView() {
         super.onDestroyView()
-        myWebSocket.close()
+        webSocket.close()
         closeNano()
-    }
-
-    fun sendMessage( message:String){
-//        myWebSocket.
-    }
-
-    /**
-     * websocketk类
-     */
-    inner class MyWebSocket {
-
-        private var websockets = HashSet<WebSocket>()
-        private var isReadyMap = HashMap<WebSocket, Boolean>()
-        private lateinit var exoPlayerWebSocketServer: ExoPlayerWebSocketServer
-        private lateinit var exoPlayerWebSocketClient: ExoPlayerWebSocketClient
-
-        init {
-            //根据播放器角色创建对应的websocket类
-            if (isServer) {
-                exoPlayerWebSocketServer = ExoPlayerWebSocketServer()
-                exoPlayerWebSocketServer.start()
-            } else {
-                exoPlayerWebSocketClient = ExoPlayerWebSocketClient()
-                exoPlayerWebSocketClient.connect()
-            }
-        }
-
-        inner class ExoPlayerWebSocketClient constructor(uri: String = videoPlayerDataBean.serverIp) :
-            org.java_websocket.client.WebSocketClient(URI(uri)) {
-            override fun onOpen(handshakedata: ServerHandshake?) {
-                websockets.add(connection)
-                ToastUtil.show(context, "连接成功")
-            }
-
-            override fun onMessage(message: String?) {
-                LogUtil.d(TAG, message.toString())
-                processMessages(message)
-            }
-
-            override fun onClose(code: Int, reason: String?, remote: Boolean) {
-                LogUtil.e(TAG, "onClose$reason")
-                websockets.clear()
-                if (remote) {
-                    ToastUtil.show(context, "对方已断开连接")
-
-                    activity?.finish()
-                } else {
-                    ToastUtil.show(context, "重新连接")
-                    connect()
-                }
-            }
-
-            override fun onError(ex: java.lang.Exception?) {
-                LogUtil.e(TAG, "onError:::" + ex?.message, ex)
-            }
-        }
-
-
-        inner class ExoPlayerWebSocketServer constructor(port: Int = Constants.WebSocket.PORT) :
-            WebSocketServer(InetSocketAddress("::", port)) {
-            override fun onOpen(conn: WebSocket, handshake: ClientHandshake?) {
-                websockets.add(conn)
-                isReadyMap[conn] = false;
-//                send()
-            }
-
-            override fun onClose(conn: WebSocket?, code: Int, reason: String?, remote: Boolean) {
-                if (remote) {
-                    ToastUtil.show(context, "${conn.toString()}已断开连接")
-                    websockets.remove(conn)
-                } else {
-                    ToastUtil.show(context, "${conn.toString()}已断开连接")
-
-                    activity?.finish()
-                }
-            }
-
-            override fun onMessage(conn: WebSocket?, message: String?) {
-                LogUtil.d(TAG, "onMessage:::$message")
-                processMessages(message, conn)
-            }
-
-            override fun onError(conn: WebSocket?, ex: java.lang.Exception?) {
-                LogUtil.e(TAG, "onError:::" + ex?.message, ex)
-            }
-
-            override fun onStart() {
-                LogUtil.d(TAG, "onStart")
-                ToastUtil.show(requireContext(), "WebSocket服务启动成功")
-            }
-
-            override fun start() {
-                try {
-                    super.start()
-                } catch (e: Exception) {
-                    ToastUtil.show(context, "websocket服务端口被占用,无法启动成功")
-                    activity?.finish()
-                }
-            }
-        }
-
-        fun close() {
-            kotlin.runCatching {
-                //根据播放器角色创建对应的websocket类
-                if (isServer) {
-                    exoPlayerWebSocketServer.stop()
-
-                } else {
-                    exoPlayerWebSocketClient.close()
-
-                }
-//                myWebSocket = null
-                ToastUtil.show(context, "已关闭websocket")
-            }
-        }
-
-        fun processMessages(message: String?, conn: WebSocket? = null) {
-            val webSocketMessageBean = WebSocketMessageBean.toClass(message)
-            when (webSocketMessageBean.messageType) {
-                Enums.MessageType.IS_READY -> {
-                    isReadyMap[conn!!] = true
-                    var isReady = 0
-                    isReadyMap.forEach {
-                        if (it.value) isReady++
-                    }
-                    if (isReady == isReadyMap.size) {
-//                        send(Enums.MessageType.START_PLAY, "")
-                        playerController.startPlay()
-                    }
-                }
-
-                Enums.MessageType.Video -> {
-                    updateVideo(webSocketMessageBean.message)
-                }
-
-                Enums.MessageType.START_PLAY -> {
-                    playerController.startPlay()
-                }
-            }
-        }
-
-        /**
-         * 通过websocket接收到的消息更新视频数据
-         */
-        fun updateVideo(message: String?) {
-//            videoPlayerParams = VideoPlayerParams.getInstance().toClass(message)
-//            LogUtil.d(TAG, videoPlayerParams.toString())
-//            if (videoPlayerParams != null) {
-//                startPlay()
-//
-//            }
-        }
-
-        /*fun send(videoPlayerParams: VideoPlayerParams) {
-            send(Enums.MessageType.Video, videoPlayerParams.toString())
-        }
-
-        fun send(messageType: Enums.MessageType, message: String) {
-            send(WebSocketMessageBean(messageType, message))
-        }
-
-        fun send(webSocketMessageBean: WebSocketMessageBean) {
-            websockets.forEach { websocket ->
-                try {
-                    websocket.send(webSocketMessageBean.toString())
-                } catch (e: Exception) {
-                    LogUtil.e(TAG, "send失败：${webSocketMessageBean.toString()}\n" + e.message, e)
-                }
-            }
-        }
-
-        fun send() {
-            send(videoPlayerParams)
-        }*/
     }
 
 
@@ -423,6 +237,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>(),VideoPlayerFr
         LogUtil.d(TAG, "onOrientationChanged:::$newConfig")
         setPlayerFull(newConfig)//设置播放器全屏
     }
+
     /**
      * 判断是否需要设置播放器全屏
      */

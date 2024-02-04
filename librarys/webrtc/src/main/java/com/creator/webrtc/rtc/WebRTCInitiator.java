@@ -2,7 +2,6 @@ package com.creator.webrtc.rtc;
 
 import android.content.Context;
 import android.util.Log;
-import ja
 import com.creator.webrtc.bean.SessionDescriptionBean;
 import com.creator.webrtc.constants.RTCConstans;
 import com.creator.webrtc.constants.WebSocketConstans;
