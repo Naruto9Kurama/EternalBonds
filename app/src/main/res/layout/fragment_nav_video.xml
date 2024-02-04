@@ -2,12 +2,14 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    xmlns:hwads="http://schemas.android.com/apk/res-auto"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".fragment.NavVideoFragment">
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
+        android:layout_marginBottom="20dp"
         android:orientation="vertical"
         android:layout_height="match_parent">
 
@@ -16,13 +18,23 @@
             android:layout_width="match_parent"
             android:layout_weight="1"
             android:layout_height="0dp">
-            <com.google.android.material.textview.MaterialTextView
+
+            <com.huawei.hms.ads.banner.BannerView
+                android:id="@+id/hw_banner_view"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:textSize="100dp"
-                android:text="广告\n页面"/>
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                hwads:adId="testw6vs28auh3"
+                hwads:bannerSize="BANNER_SIZE_360_57"/>
+            <!-- 多媒体视图 -->
+            <com.huawei.hms.ads.nativead.MediaView
+                android:id="@+id/ad_media"
+                android:layout_width="75dp"
+                android:layout_height="50dp"
+             />
         </androidx.appcompat.widget.LinearLayoutCompat>
+
 
         <!--底部按钮-->
         <LinearLayout
@@ -52,6 +64,10 @@
                 app:cornerRadius="10dp"
                 android:layout_height="wrap_content"/>
         </LinearLayout>
+        <com.google.android.material.textview.MaterialTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1.若你是视频播放源，请选择服务端\n2.若你需要连接另一台设备，请选择客户端"/>
     </androidx.appcompat.widget.LinearLayoutCompat>
 
 

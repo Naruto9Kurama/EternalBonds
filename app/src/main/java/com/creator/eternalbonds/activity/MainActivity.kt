@@ -11,11 +11,14 @@ import com.creator.eternalbonds.databinding.ActivityMainBinding
 import com.creator.eternalbonds.fragment.NavVideoFragment
 import com.creator.eternalbonds.fragment.RemoteControllerFragment
 import com.google.android.material.navigation.NavigationBarView
+import com.huawei.hms.ads.HwAds
 
 
 class MainActivity : BaseActivity<ActivityMainBinding>() {
 
     override fun init() {
+        // 初始化鲸鸿动能SDK
+        HwAds.init(this);
         replaceFragment(NavVideoFragment())
         //获取ip地址
         IPUtil.getIpAddress{allIps,pubIps,priIps->
@@ -34,7 +37,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
     }
 
     override fun addListener() {
-        binding.bottomNavigationView.setOnItemSelectedListener(NavigationBarView.OnItemSelectedListener {
+        /*binding.bottomNavigationView.setOnItemSelectedListener(NavigationBarView.OnItemSelectedListener {
             when(it.itemId){
                 R.id.nav_video->{
                     replaceFragment(NavVideoFragment())
@@ -44,7 +47,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 }
             }
             return@OnItemSelectedListener true
-        })
+        })*/
     }
     private fun replaceFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()

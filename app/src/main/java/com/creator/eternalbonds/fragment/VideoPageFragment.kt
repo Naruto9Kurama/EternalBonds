@@ -1,17 +1,21 @@
 package com.creator.eternalbonds.fragment
 
 import android.Manifest
+import android.content.Context.LAYOUT_INFLATER_SERVICE
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager.LayoutParams
 import android.widget.RadioButton
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.creator.common.activity.BaseActivity
 import com.creator.common.Constants
 import com.creator.common.MainThreadExecutor
@@ -25,6 +29,7 @@ import com.creator.common.utils.AppPermissionUtil
 import com.creator.common.utils.LogUtil
 import com.creator.common.utils.ScreenUtil
 import com.creator.common.utils.ToastUtil
+import com.creator.eternalbonds.R
 import com.creator.eternalbonds.adapter.IPAdapter
 import com.creator.eternalbonds.databinding.FragmentVideoPageBinding
 import com.creator.exoplayer.fragment.VideoPlayerFragment
@@ -65,7 +70,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
                 }
                 // 已准备好播放
                 Player.STATE_READY -> {
-                    binding.playInfoText.text = videoPlayerParams.currentVideoItemBean.ip
+//                    binding.playInfoText.text = videoPlayerParams.currentVideoItemBean.ip
 //                    if (videoPlayerParams.playerRole==Enums.PlayerRole.Client)
 //                        myWebSocket?.send(Enums.MessageType.IS_READY,"true")
                     // 播放器已准备好
@@ -139,13 +144,15 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
         if (!isServer) {
             //客户端
 //            binding.ipText.text = videoPlayerParams.serverIp
-            binding.btnOpenDrawer.visibility = View.GONE
+//            binding.btnOpenDrawer.visibility = View.GONE
+            binding.chooseLayout.visibility = View.GONE
+
         } else {
-            val ipAdapter = IPAdapter(requireContext(), binding.ipTitleText)
-            binding.ipRecycler.adapter = ipAdapter
-            ipAdapter.pubIps = videoPlayerParams.myPublicIps
-            ipAdapter.priIps = videoPlayerParams.myPrivateIps
-            binding.ipRecycler.layoutManager = LinearLayoutManager(context)
+//            val ipAdapter = IPAdapter(requireContext(), binding.ipTitleText)
+//            binding.ipRecycler.adapter = ipAdapter
+//            ipAdapter.pubIps = videoPlayerParams.myPublicIps
+//            ipAdapter.priIps = videoPlayerParams.myPrivateIps
+//            binding.ipRecycler.layoutManager = LinearLayoutManager(context)
         }
 
         screenCastingRadioButton.visibility = View.GONE
@@ -212,16 +219,35 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
                     }
                 })
         }
-        //侧边栏
-        binding.btnOpenDrawer.setOnClickListener {
-            val drawerLayout = binding.drawerLayout
-            if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                drawerLayout.closeDrawer(GravityCompat.START)
-            } else {
-                drawerLayout.openDrawer(GravityCompat.START)
-            }
+
+        binding.ipViewBtn.setOnClickListener {
+            showCustomDialog()
         }
     }
+
+
+    private fun showCustomDialog() {
+        // 获取LayoutInflater实例
+        val inflater = requireContext().getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
+
+        // 加载自定义的布局文件
+        val dialogView = inflater.inflate(R.layout.dialog_ip, null)
+
+        // 构建AlertDialog
+        val builder = AlertDialog.Builder(requireContext())
+        val findViewById = dialogView.findViewById<RecyclerView>(R.id.ipView)
+        val ipAdapter = IPAdapter(requireContext())
+        findViewById.adapter = ipAdapter
+        ipAdapter.pubIps = videoPlayerParams.myPublicIps
+        ipAdapter.priIps = videoPlayerParams.myPrivateIps
+        findViewById.layoutManager = LinearLayoutManager(context)
+        builder.setView(dialogView)
+
+        // 创建并显示AlertDialog
+        val alertDialog: AlertDialog = builder.create()
+        alertDialog.show()
+    }
+
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
@@ -424,7 +450,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
 
             override fun onMessage(conn: WebSocket?, message: String?) {
                 LogUtil.d(TAG, "onMessage:::$message")
-                processMessages(message,conn)
+                processMessages(message, conn)
             }
 
             override fun onError(conn: WebSocket?, ex: java.lang.Exception?) {

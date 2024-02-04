@@ -7,11 +7,15 @@ import androidx.fragment.app.Fragment
 import com.creator.common.bean.VideoPlayerParams
 import com.creator.common.enums.Enums
 import com.creator.common.fragment.BaseFragment
+import com.creator.common.utils.LogUtil
 import com.creator.common.utils.ToastUtil
 import com.creator.eternalbonds.activity.VideoActivity
 import com.creator.eternalbonds.databinding.DialogClientInputBinding
 import com.creator.eternalbonds.databinding.FragmentNavVideoBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.huawei.hms.ads.AdListener
+import com.huawei.hms.ads.AdParam
+import com.huawei.hms.ads.nativead.NativeAdLoader
 
 
 /**
@@ -21,7 +25,25 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
  */
 class NavVideoFragment : BaseFragment<FragmentNavVideoBinding>() {
     override fun initView() {
+//        // 创建广告请求，加载广告
+//        val adParam = AdParam.Builder().build()
+//        binding.hwBannerView.loadAd(adParam)
+        // "testy63txaom86"为测试专用的广告位ID，App正式发布时需要改为正式的广告位ID
+        val builder = NativeAdLoader.Builder(requireContext(), "testy63txaom86")
+        builder.setNativeAdLoadedListener { nativeAd ->
+            // 广告加载成功后调用
+            LogUtil.d(TAG,"加载完成")
+        }.setAdListener(object : AdListener() {
+            override fun onAdFailed(errorCode: Int) {
+                LogUtil.d(TAG,"加载失败")
+                // 广告加载失败时调用
+            }
+        })
+        val nativeAdLoader = builder.build()
 
+        nativeAdLoader.loadAd(AdParam.Builder().build())
+
+//        binding.adMedia.l
     }
 
     override fun addListener() {

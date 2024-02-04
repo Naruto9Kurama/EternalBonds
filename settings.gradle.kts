@@ -11,6 +11,8 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
+        // 配置鲸鸿动能SDK的Maven仓地址
+        maven ( url = "https://developer.huawei.com/repo/" )
     }
 }
 dependencyResolutionManagement {
@@ -26,6 +28,8 @@ dependencyResolutionManagement {
         maven(url = "https://mirrors.tuna.tsinghua.edu.cn/gradle-plugin")
         google()
         mavenCentral()
+        // 配置鲸鸿动能SDK的Maven仓地址
+        maven ( url = "https://developer.huawei.com/repo/" )
     }
 }
 
