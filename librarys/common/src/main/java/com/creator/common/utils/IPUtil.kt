@@ -2,6 +2,7 @@ package com.creator.common.utils
 
 import com.creator.common.Constants
 import com.creator.common.bean.PingResult
+import com.creator.common.bean.VideoPlayerParams
 import com.creator.common.enums.Enums
 import okhttp3.Call
 import okhttp3.Callback
@@ -24,6 +25,24 @@ import kotlin.experimental.and
 object IPUtil {
 
     private const val TAG = "IPUtil"
+
+    fun setIp(){
+        //获取ip地址
+        IPUtil.getIpAddress{allIps,pubIps,priIps->
+            if (allIps.isNotEmpty()) {
+                VideoPlayerParams.getInstance().myIps = allIps
+            }
+            if (pubIps.isNotEmpty()) {
+                VideoPlayerParams.getInstance().myPublicIps = pubIps
+            }
+            if (priIps.isNotEmpty()) {
+                VideoPlayerParams.getInstance().myPrivateIps = priIps
+            }
+        }
+    }
+
+
+
     fun getIpAddress(block: ((allIps: Set<String>, pubIps: Set<String>, priIps: Set<String>) -> Unit)? = null) {
         var ips = HashSet<String>()//公网ip
         var allIps = HashSet<String>()//全部ip
@@ -38,7 +57,9 @@ object IPUtil {
                 if (velocity(it)) {
                     ips.add(it)
                 } else {
-                    priIps.add(it)
+                    //内网只显示ipv4
+                    if (!isIpv6(it))
+                        priIps.add(it)
                 }
                 null
             })
@@ -340,7 +361,7 @@ object IPUtil {
             socket.close()
             true
         } catch (e: Exception) {
-            LogUtil.e(TAG, "网络不可达:::${e.message}",e)
+            LogUtil.e(TAG, "网络不可达:::${e.message}", e)
             false
         }
     }

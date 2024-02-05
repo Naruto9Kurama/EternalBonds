@@ -18,20 +18,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
     override fun init() {
         // 初始化鲸鸿动能SDK
+        NetworkUtils.registerNetworkChangeReceiver(this)
         HwAds.init(this);
         replaceFragment(NavVideoFragment())
-        //获取ip地址
-        IPUtil.getIpAddress{allIps,pubIps,priIps->
-            if (allIps.isNotEmpty()) {
-                VideoPlayerParams.getInstance().myIps = allIps
-            }
-            if (pubIps.isNotEmpty()) {
-                VideoPlayerParams.getInstance().myPublicIps = pubIps
-            }
-            if (priIps.isNotEmpty()) {
-                VideoPlayerParams.getInstance().myPrivateIps = priIps
-            }
-        }
+
+
         LogUtil.d(TAG,NetworkUtils.isNetworkAvailable(this).toString())
 
     }
@@ -53,6 +44,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         supportFragmentManager.beginTransaction()
             .replace(binding.homeFrameLayout.id, fragment)
             .commit()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        NetworkUtils.unregisterNetworkChangeReceiver(this)
     }
 
     /**

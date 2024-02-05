@@ -28,6 +28,7 @@ import com.creator.common.fragment.BaseFragment
 import com.creator.common.utils.AdUtil
 import com.creator.common.utils.AppPermissionUtil
 import com.creator.common.utils.LogUtil
+import com.creator.common.utils.NetworkUtils
 import com.creator.common.utils.ScreenUtil
 import com.creator.common.utils.ToastUtil
 import com.creator.eternalbonds.R
@@ -108,10 +109,22 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
         }
     }
 
+    val networkListener:NetworkUtils.NetworkChangeListener =object :NetworkUtils.NetworkChangeListener{
+        override fun onConnect() {
+        }
+
+        override fun onDisconnection() {
+            //断开连接，关闭
+            activity?.finish()
+        }
+
+    }
+
     /**
      * 初始化对象
      */
     override fun initView() {
+        NetworkUtils.registerNetworkChangeListener(networkListener)
         AdUtil.setBanner(binding.hwBannerView)
         player = VideoPlayerFragment { addPlayerListener() }
         // 使用 FragmentManager 启动 Fragment

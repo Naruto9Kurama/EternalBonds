@@ -10,7 +10,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="18dp"
-        android:text="以下是你的ip地址（长按可复制），若不在同一网络下，请选择公网地址（若您没有公网地址，可关闭wifi重启app，若还是没有，则无法在非同一网络下使用）"/>
+        android:text="以下是你的ip地址（长按可复制），若不在同一网络下，请选择公网地址（若您没有公网地址，可关闭wifi重新点击查看ip按钮，若还是没有，则无法在非同一网络下使用）"/>
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/ipView"
         app:layout_constraintTop_toBottomOf="@+id/ipTip"

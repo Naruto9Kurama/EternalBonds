@@ -5,8 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewbinding.ViewBinding
+import com.creator.common.utils.NetworkUtils
 import com.creator.common.utils.ReflectionUtil
 import com.creator.common.utils.ThemeModeUtil
+import com.creator.common.utils.ToastUtil
 import java.lang.reflect.ParameterizedType
 
 abstract open class BaseActivity<T : ViewBinding> : AppCompatActivity() {
@@ -16,7 +18,6 @@ abstract open class BaseActivity<T : ViewBinding> : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // 启用沉浸式模式
         entryImmersiveMode()
         //利用反射，调用指定ViewBinding中的inflate方法填充视图
 
