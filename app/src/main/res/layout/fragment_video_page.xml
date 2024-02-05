@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    xmlns:hwads="http://schemas.android.com/apk/res-auto"
     android:layout_height="match_parent"
     tools:context="com.creator.eternalbonds.fragment.VideoPageFragment">
 
@@ -21,12 +22,20 @@
             android:layout_width="match_parent"
             android:id="@+id/chooseLayout"
             android:layout_height="match_parent">
-
+            <com.huawei.hms.ads.banner.BannerView
+                android:id="@+id/hw_banner_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                hwads:bannerSize="BANNER_SIZE_360_57" />
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/useTip"
                 android:layout_width="wrap_content"
+                app:layout_constraintTop_toBottomOf="@+id/hw_banner_view"
+                app:layout_constraintLeft_toLeftOf="parent"
                 android:layout_height="wrap_content"
-                android:text="使用方法：\n 1.点击查看ip按钮复制其中一个ip地址\n 2.在另一台设备点击客户端，输入您的ip地址"/>
+                android:text="使用方法：\n 1.点击查看ip按钮复制其中一个ip地址\n 2.在另一台设备点击客户端，输入您复制的ip地址"/>
 
             <com.google.android.material.button.MaterialButton
                 app:layout_constraintTop_toBottomOf="@+id/useTip"

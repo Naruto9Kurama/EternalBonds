@@ -3,19 +3,29 @@ package com.creator.eternalbonds.fragment
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.widget.Button
+import android.widget.RelativeLayout
+import android.widget.TextView
 import androidx.fragment.app.Fragment
+import com.creator.common.Constants
 import com.creator.common.bean.VideoPlayerParams
 import com.creator.common.enums.Enums
 import com.creator.common.fragment.BaseFragment
+import com.creator.common.utils.AdUtil
 import com.creator.common.utils.LogUtil
 import com.creator.common.utils.ToastUtil
+import com.creator.eternalbonds.R
 import com.creator.eternalbonds.activity.VideoActivity
 import com.creator.eternalbonds.databinding.DialogClientInputBinding
 import com.creator.eternalbonds.databinding.FragmentNavVideoBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.huawei.hms.ads.AdListener
 import com.huawei.hms.ads.AdParam
+import com.huawei.hms.ads.BannerAdSize
+import com.huawei.hms.ads.nativead.NativeAd
 import com.huawei.hms.ads.nativead.NativeAdLoader
+import com.huawei.hms.ads.nativead.NativeView
 
 
 /**
@@ -25,27 +35,37 @@ import com.huawei.hms.ads.nativead.NativeAdLoader
  */
 class NavVideoFragment : BaseFragment<FragmentNavVideoBinding>() {
     override fun initView() {
-//        // 创建广告请求，加载广告
-//        val adParam = AdParam.Builder().build()
-//        binding.hwBannerView.loadAd(adParam)
-        // "testy63txaom86"为测试专用的广告位ID，App正式发布时需要改为正式的广告位ID
-        val builder = NativeAdLoader.Builder(requireContext(), "testy63txaom86")
-        builder.setNativeAdLoadedListener { nativeAd ->
-            // 广告加载成功后调用
-            LogUtil.d(TAG,"加载完成")
-        }.setAdListener(object : AdListener() {
-            override fun onAdFailed(errorCode: Int) {
-                LogUtil.d(TAG,"加载失败")
-                // 广告加载失败时调用
-            }
-        })
-        val nativeAdLoader = builder.build()
-
-        nativeAdLoader.loadAd(AdParam.Builder().build())
-
-//        binding.adMedia.l
+        AdUtil.setBanner(binding.hwBannerViewBottom)
+        AdUtil.setBanner(binding.hwBannerView, BannerAdSize.BANNER_SIZE_360_144)
+        binding.hwBannerViewBottom!!.adListener = adListener
     }
 
+    private val adListener: AdListener = object : AdListener() {
+        override fun onAdLoaded() {
+            // 广告加载成功时调用
+            LogUtil.d(TAG,"广告打开时调用")
+        }
+        override fun onAdFailed(errorCode: Int) {
+            // 广告加载失败时调用
+            LogUtil.d(TAG,"广告加载失败时调用"+errorCode)
+        }
+        override fun onAdOpened() {
+            // 广告打开时调用
+            LogUtil.d(TAG,"广告打开时调用")
+        }
+        override fun onAdClicked() {
+            // 广告点击时调用
+            LogUtil.d(TAG,"广告点击时调用")
+        }
+        override fun onAdLeave() {
+            // 广告离开应用时调用
+            LogUtil.d(TAG,"广告离开应用时调用")
+        }
+        override fun onAdClosed() {
+            // 广告关闭时调用
+            LogUtil.d(TAG,"onAdClosed")
+        }
+    }
     override fun addListener() {
         //打开服务端
         binding.openServeBtn.setOnClickListener {
@@ -65,14 +85,16 @@ class NavVideoFragment : BaseFragment<FragmentNavVideoBinding>() {
                 .create()
             dialog.show()
             dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
-                    val intent = Intent(context, VideoActivity::class.java)
-                    val serverIp = ipInputLayout.ipInput.text.toString()
-                    if (serverIp.isNotEmpty() && VideoPlayerParams.getInstance().setServerIp(serverIp) ) {
-                        VideoPlayerParams.getInstance().playerRole = Enums.PlayerRole.Client
-                        startActivity(intent)
-                    } else {
-                        ToastUtil.show(context, "请先输入有效的服务端IP")
-                    }
+                val intent = Intent(context, VideoActivity::class.java)
+                val serverIp = ipInputLayout.ipInput.text.toString()
+                if (serverIp.isNotEmpty() && VideoPlayerParams.getInstance()
+                        .setServerIp(serverIp)
+                ) {
+                    VideoPlayerParams.getInstance().playerRole = Enums.PlayerRole.Client
+                    startActivity(intent)
+                } else {
+                    ToastUtil.show(context, "请先输入有效的服务端IP")
+                }
             }
         }
     }

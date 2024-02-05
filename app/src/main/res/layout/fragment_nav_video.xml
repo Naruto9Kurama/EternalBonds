@@ -1,73 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:hwads="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    xmlns:hwads="http://schemas.android.com/apk/res-auto"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".fragment.NavVideoFragment">
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
-        android:layout_marginBottom="20dp"
-        android:orientation="vertical"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <!--上半部图片-->
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
-            android:layout_weight="1"
-            android:layout_height="0dp">
-
+            android:layout_height="0dp"
+            android:layout_weight="1">
             <com.huawei.hms.ads.banner.BannerView
                 android:id="@+id/hw_banner_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
-                android:layout_centerHorizontal="true"
-                hwads:adId="testw6vs28auh3"
-                hwads:bannerSize="BANNER_SIZE_360_57"/>
-            <!-- 多媒体视图 -->
-            <com.huawei.hms.ads.nativead.MediaView
-                android:id="@+id/ad_media"
-                android:layout_width="75dp"
-                android:layout_height="50dp"
-             />
+                android:layout_centerHorizontal="true" />
         </androidx.appcompat.widget.LinearLayoutCompat>
 
 
         <!--底部按钮-->
         <LinearLayout
             android:layout_width="match_parent"
-            android:gravity="center"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:gravity="center">
             <!--服务端按钮-->
             <com.google.android.material.button.MaterialButton
-                android:layout_width="wrap_content"
                 android:id="@+id/openServeBtn"
-                android:layout_weight="1"
-                android:text="服务端"
-                android:padding="15dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginLeft="30dp"
                 android:layout_marginRight="15dp"
-                app:cornerRadius="10dp"
-                android:layout_height="wrap_content"/>
+                android:layout_weight="1"
+                android:padding="15dp"
+                android:text="服务端"
+                app:cornerRadius="10dp" />
             <!--客户端按钮-->
             <com.google.android.material.button.MaterialButton
-                android:layout_width="wrap_content"
                 android:id="@+id/openClientBtn"
-                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginLeft="15dp"
                 android:layout_marginRight="30dp"
+                android:layout_weight="1"
                 android:padding="15dp"
                 android:text="客户端"
-                app:cornerRadius="10dp"
-                android:layout_height="wrap_content"/>
+                app:cornerRadius="10dp" />
         </LinearLayout>
+
         <com.google.android.material.textview.MaterialTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="1.若你是视频播放源，请选择服务端\n2.若你需要连接另一台设备，请选择客户端"/>
+            android:text="1.若你是视频播放源，请选择服务端\n2.若你需要连接另一台设备，请选择客户端" />
+        <com.huawei.hms.ads.banner.BannerView
+            android:id="@+id/hw_banner_view_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true" />
     </androidx.appcompat.widget.LinearLayoutCompat>
 
 

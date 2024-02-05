@@ -74,7 +74,7 @@ dependencies {
 
 //    implementation("com.huawei.hms:ads-identifier:3.4.62.300")
 //    implementation("com.huawei.hms:ads-installreferrer:3.4.62.300")
-    implementation ("com.huawei.hms:ads-lite:13.4.68.300")
+
     /*--------------------------------------------------------------------*/
     implementation(project(":librarys"))
     implementation(project(":librarys:exoplayer"))

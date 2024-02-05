@@ -43,6 +43,10 @@ data object Constants {
         )
     }
 
+    object Ad{
+        const val BANNER_ID="testw6vs28auh3"
+    }
+
 
 
 }

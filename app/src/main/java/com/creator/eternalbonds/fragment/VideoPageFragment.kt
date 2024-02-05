@@ -25,6 +25,7 @@ import com.creator.common.bean.VideoPlayerParams
 import com.creator.common.bean.WebSocketMessageBean
 import com.creator.common.enums.Enums
 import com.creator.common.fragment.BaseFragment
+import com.creator.common.utils.AdUtil
 import com.creator.common.utils.AppPermissionUtil
 import com.creator.common.utils.LogUtil
 import com.creator.common.utils.ScreenUtil
@@ -111,6 +112,7 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
      * 初始化对象
      */
     override fun initView() {
+        AdUtil.setBanner(binding.hwBannerView)
         player = VideoPlayerFragment { addPlayerListener() }
         // 使用 FragmentManager 启动 Fragment
         childFragmentManager.beginTransaction().replace(binding.playerView.id, player).commit()
@@ -146,6 +148,10 @@ class VideoPageFragment : BaseFragment<FragmentVideoPageBinding>() {
 //            binding.ipText.text = videoPlayerParams.serverIp
 //            binding.btnOpenDrawer.visibility = View.GONE
             binding.chooseLayout.visibility = View.GONE
+            //设置视频播放器竖直全屏
+            val layoutParams = binding.playerView.layoutParams
+            layoutParams.height=LayoutParams.MATCH_PARENT
+            binding.playerView.layoutParams=layoutParams
 
         } else {
 //            val ipAdapter = IPAdapter(requireContext(), binding.ipTitleText)
