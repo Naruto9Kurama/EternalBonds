@@ -60,7 +60,6 @@ public class VideoItemBean extends BaseBean {
     }
 
     public String getUri() {
-
         if (playbackSource == Enums.PlaybackSource.LOCAL_FILES) {
             switch (getPlayerRole()) {
                 case Server:

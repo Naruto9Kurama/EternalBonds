@@ -1,4 +1,4 @@
- package com.creator.eternalbonds.fragment
+package com.creator.eternalbonds.fragment
 
 import android.content.Context
 import android.os.Bundle
@@ -19,15 +19,15 @@ import com.creator.eternalbonds.databinding.FragmentVideoPlayerBinding
 import com.creator.exoplayer.utils.ExoPlayerController
 
 
- /**
-  * 播放器页面
-  */
- @OptIn(UnstableApi::class)
-class VideoPlayerFragment(val playerLoadProgress:PlayerLoadProgress?=null) :
+/**
+ * 播放器页面
+ */
+@OptIn(UnstableApi::class)
+class VideoPlayerFragment(val playerLoadProgress: PlayerLoadProgress? = null) :
     BaseFragment<FragmentVideoPlayerBinding>() {
 
-     lateinit var exoPlayer: ExoPlayer
-     lateinit var  exoPlayerController: ExoPlayerController
+    lateinit var exoPlayer: ExoPlayer
+    lateinit var exoPlayerController: ExoPlayerController
 
 
     override fun initView(
@@ -41,7 +41,6 @@ class VideoPlayerFragment(val playerLoadProgress:PlayerLoadProgress?=null) :
     }
 
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         playerLoadProgress?.onLoadingFinish()
@@ -49,33 +48,13 @@ class VideoPlayerFragment(val playerLoadProgress:PlayerLoadProgress?=null) :
 
 
 
-    fun setMediaSource(videoItemBean: VideoItemBean,  isPlayWhenReady: Boolean = false){
-        // 创建一个MediaItem对象，表示要播放的媒体文件
-        val mediaItem = MediaItem.fromUri(videoItemBean.uri)
-        // 设置数据源工厂
-        val dataSourceFactory = DefaultDataSourceFactory(
-            requireContext(),
-            Util.getUserAgent(requireContext(), "com.creator.eternalbonds")
-        )
-        // 创建一个ProgressiveMediaSource，用于播放常规的媒体文件（例如MP4）
-        val mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
-            .createMediaSource(mediaItem)
-        // 设置要播放的媒体项到ExoPlayer
-        exoPlayer.setMediaItem(mediaItem)
-        // 设置媒体源工厂到ExoPlayer
-        exoPlayer.setMediaSource(mediaSource)
-        // 准备播放
-        exoPlayer.prepare()
-        if (isPlayWhenReady) exoPlayer.playWhenReady = true;
+
+
+    interface PlayerLoadProgress {
+        /**
+         * 播放器加载完成回调
+         */
+        fun onLoadingFinish();
     }
-
-
-
-     interface PlayerLoadProgress{
-         /**
-          * 播放器加载完成回调
-          */
-         fun onLoadingFinish();
-     }
 
 }
